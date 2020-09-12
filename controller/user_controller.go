@@ -16,6 +16,11 @@ func RegisterUser(c *gin.Context) {
 		c.JSON(restErr.Status, restErr)
 		return
 	}
+	validationError := domain.ValidateUser(&user)
+	if validationError != nil {
+		c.JSON(validationError.Status, validationError)
+		return
+	}
 	result, restErr := service.CreateUser(user)
 	if restErr != nil {
 		c.JSON(restErr.Status, restErr)

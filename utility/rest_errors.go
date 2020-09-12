@@ -6,10 +6,10 @@ import (
 )
 
 type RestError struct {
-	Message   string    `json:"Message`
-	Status    int       `json:"Code`
-	Error     string    `json:"Error`
-	Timestamp time.Time `json:"Timestamp`
+	Message   string `json:"Message`
+	Status    int    `json:"Code`
+	Error     string `json:"Error`
+	Timestamp string `json:"Timestamp`
 }
 
 func NewBadRequestError(message string) *RestError {
@@ -17,7 +17,7 @@ func NewBadRequestError(message string) *RestError {
 		Message:   message,
 		Status:    http.StatusBadRequest,
 		Error:     "bad_request",
-		Timestamp: time.Now(),
+		Timestamp: InApiDateFormat(time.Now().UTC()),
 	}
 }
 
@@ -26,6 +26,6 @@ func NewInternalServerError(message string) *RestError {
 		Message:   message,
 		Status:    http.StatusInternalServerError,
 		Error:     "interval_server_error",
-		Timestamp: time.Now(),
+		Timestamp: InApiDateFormat(time.Now().UTC()),
 	}
 }
