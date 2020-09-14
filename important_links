@@ -16,3 +16,10 @@ https://github.com/jakecoffman/gorest/blob/master/controller.go
 https://www.nicolasmerouze.com/how-to-render-json-api-golang-mongodb
 https://github.com/tricko17/go-rest-mgo
 https://github.com/guizot/golang-gin-mongo/blob/master/src/handlers/user/user.go
+https://stackoverflow.com/questions/23223743/connections-pool-in-go-mgo-package
+https://github.com/mongodb/mongo-go-driver/blob/master/data/connection-monitoring-and-pooling/connection-monitoring-and-pooling.rst
+https://www.mongodb.com/blog/post/mongodb-go-driver-tutorial
+https://www.digitalocean.com/community/tutorials/how-to-use-go-with-mongodb-using-the-mongodb-go-driver
+https://stackoverflow.com/questions/58365838/how-to-reuse-mongodb-connection-in-go
+https://www.avcosystems.com/blog/mongo-go/
+https://www.compose.com/articles/mongodb-and-go-moving-on-from-mgo/
