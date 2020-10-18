@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"reflect"
 
 	//"reflect"
@@ -40,7 +41,10 @@ func flatten(root string, configMap map[interface{}]interface{}) {
 		if reflect.ValueOf(v).Kind() == reflect.Map {
 			flatten(nextRoot, v.(map[interface{}]interface{}))
 		} else {
-			fmt.Printf("%v %v\n", nextRoot, v)
+			//fmt.Printf("%v %v\n", nextRoot, v)
+			if os.Getenv(nextRoot) == "" {
+				os.Setenv(nextRoot, fmt.Sprintf("%v", v))
+			}
 		}
 	}
 }

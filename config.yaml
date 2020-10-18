@@ -1,7 +1,3 @@
-GOOGLE_OAUTH_SCOPES: abc def
-GOOGLE_OAUTH_CLIENT_ID: 1s4rf
-
-test1:
-  test2:
-    test2_1: 1
-    test2_2: 2
+GOOGLE_OAUTH_SCOPES: profile email openid
+GOOGLE_OAUTH_CLIENT_ID: 811816529358-abktojt2gij8kla6auah5qk5m9vgl7p3.apps.googleusercontent.com
+GOOGLE_OAUTH_REDIRECT_URI: http://localhost:8080/account/google-login/redirect
