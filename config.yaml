@@ -1,0 +1,7 @@
+GOOGLE_OAUTH_SCOPES: abc def
+GOOGLE_OAUTH_CLIENT_ID: 1s4rf
+
+test1:
+  test2:
+    test2_1: 1
+    test2_2: 2

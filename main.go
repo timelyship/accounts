@@ -1,9 +1,11 @@
 package main
 
 import (
-	"timelyship.com/accounts/application"
+	"timelyship.com/accounts/config"
 )
 
 func main() {
-	application.Start()
+	config.Init()
+	//application.Start()
+
 }
