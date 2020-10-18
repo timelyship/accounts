@@ -24,6 +24,7 @@ func HandleRedirectFromGoogle(c *gin.Context) {
 	for k, v := range queryParams {
 		fmt.Printf("%v %v %T %T\n", k, v, k, v)
 	}
-	c.JSON(http.StatusOK, "sexy")
-	c.Abort()
+	redirectUri := service.HandleGoogleRedirect(queryParams)
+	c.Redirect(http.StatusTemporaryRedirect, redirectUri)
+	//c.Abort()
 }

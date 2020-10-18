@@ -2,11 +2,7 @@ package dto
 
 import (
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/url"
-	"time"
-	"timelyship.com/accounts/domain"
-	"timelyship.com/accounts/repository"
 )
 
 type GoogleOpenIdAuth struct {
@@ -44,11 +40,9 @@ func (g *GoogleOpenIdAuth) BuildUri() string {
 		"response_type=code&client_id=%s&" +
 		"scope=%s&redirect_uri=%s&state=%s&nonce=%s&prompt=select_account"
 
-	googleState := domain.GoogleState{
-		BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-		State:      g.state,
-	}
-	repository.SaveGoogleState(&googleState)
-
 	return fmt.Sprintf(uri, g.clientId, scopeEncoded, g.redirectUri, stateEncoded, g.nonce)
+}
+
+func (g *GoogleOpenIdAuth) GetState() string {
+	return g.state
 }
