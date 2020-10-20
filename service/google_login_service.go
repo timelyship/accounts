@@ -52,7 +52,8 @@ func HandleGoogleRedirect(values url.Values) string {
 			// get user info from google
 			userMap := exchangeCode(code)
 			googleId := userMap["sub"]
-			exstingGoogleUser := repository.GetUserByGoogleId(googleId)
+			fmt.Println(googleId)
+			//exstingGoogleUser := repository.GetUserByGoogleId(googleId)
 			// create or update user
 			// give exchange token to the user
 			splits := strings.Split(receivedState, "&")

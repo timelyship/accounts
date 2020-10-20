@@ -30,6 +30,7 @@ type User struct {
 	FirstName              string        `json:"firstName"`
 	LastName               string        `json:"lastName"`
 	PrimaryEmail           string        `json:"email"`
+	Email                  string        `json:"email"`
 	IsPrimaryEmailVerified bool          `json:"isEmailVerified"`
 	PrimaryPicture         string        `json:"isEmailVerified"`
 	PhoneNumbers           []PhoneNumber `json:"phoneNumbers"`
