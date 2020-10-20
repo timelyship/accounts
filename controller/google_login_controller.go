@@ -21,9 +21,6 @@ func LoginByGoogle(c *gin.Context) {
 func HandleRedirectFromGoogle(c *gin.Context) {
 	fmt.Println("Login redirect log...")
 	queryParams := c.Request.URL.Query()
-	for k, v := range queryParams {
-		fmt.Printf("%v %v %T %T\n", k, v, k, v)
-	}
 	redirectUri := service.HandleGoogleRedirect(queryParams)
 	c.Redirect(http.StatusTemporaryRedirect, redirectUri)
 	//c.Abort()

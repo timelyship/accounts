@@ -10,12 +10,30 @@ import (
 // https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#email-state-typeemail
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
+type PhoneNumber struct {
+	Number     string
+	IsPrimary  bool
+	IsVerified bool
+}
+type GoogleAuthInfo struct {
+	Id      string
+	Email   string // email must be verified
+	Picture string
+}
+
+type Role struct {
+	Name   string
+	Parent *Role
+}
 type User struct {
-	Id          int64
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	Email       string `json:"email"`
-	DateCreated time.Time
+	Id                     int64
+	FirstName              string        `json:"firstName"`
+	LastName               string        `json:"lastName"`
+	PrimaryEmail           string        `json:"email"`
+	IsPrimaryEmailVerified bool          `json:"isEmailVerified"`
+	PrimaryPicture         string        `json:"isEmailVerified"`
+	PhoneNumbers           []PhoneNumber `json:"phoneNumbers"`
+	DateCreated            time.Time
 }
 
 func Normalize(user *User) {

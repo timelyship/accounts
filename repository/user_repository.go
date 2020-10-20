@@ -78,3 +78,7 @@ func SavePerson(person *domain.Person) *utility.RestError {
 	fmt.Println("Successfully inserted", insertResult)
 	return nil
 }
+
+func GetUserByGoogleId(googleId string) *domain.User {
+
+}
