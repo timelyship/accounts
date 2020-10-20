@@ -53,7 +53,33 @@ func HandleGoogleRedirect(values url.Values) string {
 			userMap := exchangeCode(code)
 			googleId := userMap["sub"]
 			fmt.Println(googleId)
-			//exstingGoogleUser := repository.GetUserByGoogleId(googleId)
+			existingUser, _ := repository.GetUserByGoogleId(fmt.Sprintf("%v", googleId))
+			if existingUser == nil {
+				//create new user
+				existingUser = &domain.User{
+					BaseEntity:             domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+					FirstName:              userMap["given_name"].(string),
+					LastName:               userMap["family_name"].(string),
+					PrimaryEmail:           userMap["email"].(string),
+					IsPrimaryEmailVerified: userMap["email_verified"].(bool),
+					PrimaryPicture:         userMap["picture"].(string),
+					DateCreated:            time.Now(),
+					DateUpdated:            time.Now(),
+					GoogleAuthInfo: domain.GoogleAuthInfo{
+						Id:      userMap["sub"].(string),
+						Email:   userMap["email"].(string),
+						Picture: userMap["picture"].(string),
+					},
+				}
+				if existingUser.IsPrimaryEmailVerified {
+					// save user
+					repository.SaveUser(existingUser)
+				} else {
+					// raise panic
+				}
+			} else {
+				// create exchange token
+			}
 			// create or update user
 			// give exchange token to the user
 			splits := strings.Split(receivedState, "&")

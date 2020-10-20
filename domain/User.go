@@ -2,9 +2,7 @@ package domain
 
 import (
 	"regexp"
-	"strings"
 	"time"
-	"timelyship.com/accounts/utility"
 )
 
 // https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#email-state-typeemail
@@ -15,6 +13,7 @@ type PhoneNumber struct {
 	IsPrimary  bool
 	IsVerified bool
 }
+
 type GoogleAuthInfo struct {
 	Id      string
 	Email   string // email must be verified
@@ -25,20 +24,23 @@ type Role struct {
 	Name   string
 	Parent *Role
 }
+
 type User struct {
-	Id                     int64
-	FirstName              string        `json:"firstName"`
-	LastName               string        `json:"lastName"`
-	PrimaryEmail           string        `json:"email"`
-	Email                  string        `json:"email"`
-	IsPrimaryEmailVerified bool          `json:"isEmailVerified"`
-	PrimaryPicture         string        `json:"isEmailVerified"`
-	PhoneNumbers           []PhoneNumber `json:"phoneNumbers"`
-	DateCreated            time.Time
+	BaseEntity             `bson:",inline"`
+	FirstName              string         `json:"firstName" bson:"first_name"`
+	LastName               string         `json:"lastName" bson:"last_name"`
+	PrimaryEmail           string         `json:"primaryEmail" bson:"primary_email"`
+	IsPrimaryEmailVerified bool           `json:"isPrimaryEmailVerified" bson:"is_primary_email_verified"`
+	PrimaryPicture         string         `json:"PrimaryPicture" bson:"primary_picture"`
+	PhoneNumbers           []PhoneNumber  `json:"phoneNumbers" bson:"phone_numbers"`
+	DateCreated            time.Time      `json:"dateCreated" bson:"date_created"`
+	DateUpdated            time.Time      `json:"dateUpdated" bson:"date_updated"`
+	GoogleAuthInfo         GoogleAuthInfo `json:"googleAuthInfo" bson:"google_auth_info"`
 }
 
+/*
 func Normalize(user *User) {
-	user.Email = strings.TrimSpace(user.Email)
+	user.PrimaryEmail = strings.TrimSpace(user.PrimaryEmail)
 	user.FirstName = strings.TrimSpace(user.FirstName)
 	user.LastName = strings.TrimSpace(user.LastName)
 }
@@ -46,7 +48,7 @@ func Normalize(user *User) {
 // violation of database constraints are handled at the service layer, because those are business validations.
 // Data validation goes here.
 func ValidateUser(user *User) *utility.RestError {
-	if !emailRegex.MatchString(user.Email) {
+	if !emailRegex.MatchString(user.PrimaryEmail) {
 		return utility.NewBadRequestError("Invalid email pattern. Please contact administrator.")
 	}
 	firstNameLen := len(user.FirstName)
@@ -62,3 +64,5 @@ func ValidateUser(user *User) *utility.RestError {
 	}
 	return nil
 }
+
+*/
