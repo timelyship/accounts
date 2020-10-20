@@ -110,7 +110,6 @@ func exchangeCode(code string) map[string]interface{} {
 	}
 
 	var res map[string]interface{}
-
 	json.NewDecoder(resp.Body).Decode(&res)
 	idToken := res["id_token"]
 	user := extractToken(idToken.(string))
@@ -122,6 +121,6 @@ func extractToken(token string) map[string]interface{} {
 	splits := strings.Split(token, ".")
 	userJsonStrBytes, _ := base64.StdEncoding.DecodeString(splits[1])
 	var result map[string]interface{}
-	json.Unmarshal(userJsonStrBytes, result)
+	json.Unmarshal(userJsonStrBytes, &result)
 	return result
 }

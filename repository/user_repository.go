@@ -9,6 +9,8 @@ import (
 	"timelyship.com/accounts/utility"
 )
 
+const USER_COLLECTION = "user"
+
 //
 //import (
 //	"context"
@@ -92,9 +94,9 @@ import (
 func GetUserByGoogleId(googleId string) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"google_auth_Info.id", googleId}}
+	filter := bson.D{{"google_auth_info.id", googleId}}
 	result := domain.User{}
-	error := GetCollection(collection).FindOne(ctx, filter).Decode(&result)
+	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return nil, utility.NewInternalServerError("Could not insert to database. Try after some time.")
@@ -105,7 +107,7 @@ func GetUserByGoogleId(googleId string) (*domain.User, *utility.RestError) {
 func SaveUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	insertResult, error := GetCollection(collection).InsertOne(ctx, user)
+	insertResult, error := GetCollection(USER_COLLECTION).InsertOne(ctx, user)
 	fmt.Printf("%v\n", insertResult)
 	if error != nil {
 		fmt.Println("db-error:", error)
