@@ -4,3 +4,8 @@ GOOGLE_OAUTH_CLIENT_SECRET: IpCid-PodUKb56EmCOaBHY-K
 GOOGLE_OAUTH_REDIRECT_URI: http://localhost:8080/account/google-login/redirect
 MONGO_CONNECTION_STRING: mongodb+srv://mongodbroot:s3curedp%40s%24w0rd89@mongowork.sxfuk.mongodb.net/?retryWrites=true&w=majority
 DATABASE: timelyship-dev-db
+
+FB_OAUTH_SCOPES: email
+FB_OAUTH_CLIENT_ID: 893056244431932
+FB_OAUTH_CLIENT_SECRET: 3ff6ee70e776264b1733a97b45b23cb7
+FB_OAUTH_REDIRECT_URI: http://localhost:8080/account/fb-login/redirect
