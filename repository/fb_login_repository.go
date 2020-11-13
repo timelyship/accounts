@@ -19,7 +19,7 @@ func GetByFBState(state string) (*domain.FBState, *utility.RestError) {
 	error := GetCollection(FB_STATE_COLLECTION).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
-		return nil, utility.NewInternalServerError("Could not insert to database. Try after some time.")
+		return nil, utility.NewInternalServerError("Could not insert to database. Try after some time.", &error)
 	}
 	return &result, nil
 }
@@ -30,7 +30,7 @@ func SaveFBState(fbState *domain.FBState) *utility.RestError {
 	insertResult, error := GetCollection(FB_STATE_COLLECTION).InsertOne(ctx, fbState)
 	if error != nil {
 		fmt.Println("db-error:", error)
-		return utility.NewInternalServerError("Could not insert to database. Try after some time.")
+		return utility.NewInternalServerError("Could not insert to database. Try after some time.", &error)
 	}
 	fmt.Println("Successfully inserted", insertResult)
 	return nil

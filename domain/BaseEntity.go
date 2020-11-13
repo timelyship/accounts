@@ -6,13 +6,7 @@ import (
 )
 
 type BaseEntity struct {
-	Id         primitive.ObjectID `json:"id" bson:"_id"`
-	InsertedAt time.Time          `json:"inserted_at" bson:"inserted_at"`
-	LastUpdate time.Time          `json:"last_update" bson:"last_update"`
-}
-
-type Person struct {
-	BaseEntity `bson:",inline"`
-	Name       string    `json:"name" bson:"name"`
-	BirthDate  time.Time `json:"birth_date" bson:"birth_date"`
+	Id         primitive.ObjectID `bson:"_id"`
+	InsertedAt time.Time          `bson:"inserted_at"`
+	LastUpdate time.Time          `bson:"last_update"`
 }

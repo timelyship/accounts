@@ -16,6 +16,11 @@ func SignUp(c *gin.Context) {
 	}
 
 	err := service.InitiateSignUp(signUpRequest)
+	if err != nil {
+		c.JSON(err.Status, err)
+	} else {
+		c.JSON(201, "")
+	}
 }
 
 func VerifyEmail() {
