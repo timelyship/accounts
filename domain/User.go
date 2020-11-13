@@ -31,6 +31,11 @@ type Role struct {
 	Parent *Role
 }
 
+var APP_USER_ROLE Role = Role{
+	Name:   "",
+	Parent: nil,
+}
+
 type User struct {
 	BaseEntity             `bson:",inline"`
 	FirstName              string           `bson:"first_name"`
