@@ -79,3 +79,18 @@ func sendEmailVerificationMail(user *domain.User) *utility.RestError {
 	}
 	return nil
 }
+
+func VerifyEmail(verificationToken string) *utility.RestError {
+	verificationSecret, err := repository.GetVerificationSecret(verificationToken)
+	if err != nil {
+		return err
+	}
+	user, dbErr := repository.GetUserByEmail(verificationSecret.Subject)
+	if dbErr != nil {
+		return dbErr
+	}
+	user.PrimaryEmail = verificationSecret.Subject
+	user.IsPrimaryEmailVerified = true
+	saveErr := repository.UpdateUser(user)
+	return saveErr
+}

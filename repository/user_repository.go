@@ -25,6 +25,23 @@ func GetUserByGoogleId(googleId string) (*domain.User, *utility.RestError) {
 	return &result, nil
 }
 
+func GetUserByEmail(email string) (*domain.User, *utility.RestError) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	filter := bson.D{{"$or", bson.A{
+		bson.D{{"primary_email", email}},
+		bson.D{{"google_auth_info.email", email}},
+		bson.D{{"facebook_auth_info.email", email}},
+	}}}
+	result := domain.User{}
+	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	if error != nil {
+		fmt.Println("db-error:", error)
+		return nil, utility.NewInternalServerError("Could not query.", &error)
+	}
+	return &result, nil
+}
+
 func SaveUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -33,6 +50,19 @@ func SaveUser(user *domain.User) *utility.RestError {
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return utility.NewInternalServerError("Could not insert to database. Try after some time.", &error)
+	}
+	return nil
+}
+
+func UpdateUser(user *domain.User) *utility.RestError {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	filter := bson.D{{"_id", user.Id}}
+	updateResult := GetCollection(USER_COLLECTION).FindOneAndReplace(ctx, filter, user)
+	error := updateResult.Err()
+	if error != nil {
+		fmt.Println("db-error:", error)
+		return utility.NewInternalServerError("Could not replace to database. Try after some time.", &error)
 	}
 	return nil
 }

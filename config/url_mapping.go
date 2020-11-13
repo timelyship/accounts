@@ -12,4 +12,5 @@ func mapUrls() {
 	router.GET("/account/google-login/redirect", controller.HandleRedirectFromGoogle)
 	router.GET("/account/fb-login/redirect", controller.HandleRedirectFromDB)
 	router.POST("/account/sign-up", controller.SignUp)
+	router.POST("/verify-email/:verificationToken", controller.VerifyEmail)
 }

@@ -19,12 +19,18 @@ func SignUp(c *gin.Context) {
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
-		c.JSON(201, "")
+		c.JSON(201, nil)
 	}
 }
 
-func VerifyEmail() {
-
+func VerifyEmail(c *gin.Context) {
+	verificationToken := c.Param("verificationToken")
+	err := service.VerifyEmail(verificationToken)
+	if err != nil {
+		c.JSON(err.Status, err)
+	} else {
+		c.JSON(200, nil)
+	}
 }
 
 func ChangePassword() {
