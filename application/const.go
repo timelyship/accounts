@@ -7,7 +7,7 @@ var (
 		EMAIL:            "EMAIL",
 		PHONE:            "PHONE",
 		VERIFY_EMAIL:     "VERIFY_EMAIL",
-		PASSWORD_PATTERN: "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
+		PASSWORD_PATTERN: "^[a-zA-Z0-9]{8,}$",
 		EMAIL_PATTERN:    "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
 	}
 

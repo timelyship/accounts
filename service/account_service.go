@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strings"
 	"time"
 	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/domain"
@@ -28,13 +30,17 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 	}
 	// create user
 	user := domain.User{
+		BaseEntity:             domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		FirstName:              signUpRequest.FirstName,
 		LastName:               signUpRequest.LastName,
 		PrimaryEmail:           signUpRequest.Email,
 		IsPrimaryEmailVerified: false,
 		Password:               utility.HashPassword(signUpRequest.Password),
 	}
-	repository.SaveUser(&user)
+	sErr := repository.SaveUser(&user)
+	if sErr != nil {
+		return sErr
+	}
 	emailVerErr := sendEmailVerificationMail(&user)
 	if emailVerErr != nil {
 		fmt.Println("Inconsistent DB Error")
@@ -44,8 +50,9 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 }
 
 func sendEmailVerificationMail(user *domain.User) *utility.RestError {
-	secret := uuid.New().String()
+	secret := strings.Replace(uuid.New().String(), "-", "", -1)
 	vs := &domain.VerificationSecret{
+		BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		Type:       application.STRING_CONST.EMAIL,
 		Subject:    user.PrimaryEmail,
 		Secret:     secret,

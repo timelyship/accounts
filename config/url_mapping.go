@@ -1,6 +1,8 @@
-package application
+package config
 
-import "timelyship.com/accounts/controller"
+import (
+	"timelyship.com/accounts/controller"
+)
 
 func mapUrls() {
 	router.GET("/ping", controller.Ping)
@@ -9,4 +11,5 @@ func mapUrls() {
 	router.GET("/login-fb", controller.LoginByFB)
 	router.GET("/account/google-login/redirect", controller.HandleRedirectFromGoogle)
 	router.GET("/account/fb-login/redirect", controller.HandleRedirectFromDB)
+	router.POST("/account/sign-up", controller.SignUp)
 }

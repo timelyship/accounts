@@ -48,7 +48,7 @@ func (r SignUpRequest) ApplyUiValidation() *utility.RestError {
 	passwordRegex := regexp.MustCompile(application.STRING_CONST.PASSWORD_PATTERN)
 	if !passwordRegex.MatchString(r.Password) {
 		validationErrors = append(validationErrors, errors.New("password verification failed!Rules are - "+
-			"at least one lower case,one uppercase,one digit,one special character,one digit,minimum 8 length"))
+			"minimum 8 length(characters between lowercase,uppercase and number,no special character)"))
 	}
 	var err error = utility.ValidationError{
 		ErrorMessages: validationErrors,
