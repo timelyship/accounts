@@ -20,6 +20,12 @@ type GoogleAuthInfo struct {
 	Picture string
 }
 
+type FacebookAuthInfo struct {
+	Id      string
+	Email   string // email must be verified
+	Picture string
+}
+
 type Role struct {
 	Name   string
 	Parent *Role
@@ -27,15 +33,17 @@ type Role struct {
 
 type User struct {
 	BaseEntity             `bson:",inline"`
-	FirstName              string         `json:"firstName" bson:"first_name"`
-	LastName               string         `json:"lastName" bson:"last_name"`
-	PrimaryEmail           string         `json:"primaryEmail" bson:"primary_email"`
-	IsPrimaryEmailVerified bool           `json:"isPrimaryEmailVerified" bson:"is_primary_email_verified"`
-	PrimaryPicture         string         `json:"PrimaryPicture" bson:"primary_picture"`
-	PhoneNumbers           []PhoneNumber  `json:"phoneNumbers" bson:"phone_numbers"`
-	DateCreated            time.Time      `json:"dateCreated" bson:"date_created"`
-	DateUpdated            time.Time      `json:"dateUpdated" bson:"date_updated"`
-	GoogleAuthInfo         GoogleAuthInfo `json:"googleAuthInfo" bson:"google_auth_info"`
+	FirstName              string           `json:"firstName" bson:"first_name"`
+	LastName               string           `json:"lastName" bson:"last_name"`
+	PrimaryEmail           string           `json:"primaryEmail" bson:"primary_email"`
+	IsPrimaryEmailVerified bool             `json:"isPrimaryEmailVerified" bson:"is_primary_email_verified"`
+	PrimaryPicture         string           `json:"PrimaryPicture" bson:"primary_picture"`
+	PhoneNumbers           []PhoneNumber    `json:"phoneNumbers" bson:"phone_numbers"`
+	DateCreated            time.Time        `json:"dateCreated" bson:"date_created"`
+	DateUpdated            time.Time        `json:"dateUpdated" bson:"date_updated"`
+	GoogleAuthInfo         GoogleAuthInfo   `json:"googleAuthInfo" bson:"google_auth_info"`
+	FacebookAuthInfo       FacebookAuthInfo `json:"facebookAuthInfo" bson:"facebook_auth_info"`
+	Password               string           `json:"password" bson:"password"`
 }
 
 /*

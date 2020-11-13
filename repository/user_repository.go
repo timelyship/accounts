@@ -4,92 +4,13 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/utility"
 )
 
 const USER_COLLECTION = "user"
-
-//
-//import (
-//	"context"
-//	"fmt"
-//	"go.mongodb.org/mongo-driver/mongo"
-//	"go.mongodb.org/mongo-driver/mongo/options"
-//	"go.mongodb.org/mongo-driver/mongo/readpref"
-//	"time"
-//	"timelyship.com/accounts/domain"
-//	"timelyship.com/accounts/utility"
-//)
-//
-//func SaveUser(user *domain.User) *utility.RestError {
-//	uri := "mongodb+srv://mongodbroot:s3curedp%40s%24w0rd89@mongowork.sxfuk.mongodb.net/?retryWrites=true&w=majority"
-//	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-//	defer cancel()
-//
-//	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-//	if err != nil {
-//		return utility.NewInternalServerError("Could not connect to database.Try after some time.")
-//	}
-//
-//	defer func() {
-//		if err = client.Disconnect(ctx); err != nil {
-//			panic(err)
-//		}
-//	}()
-//
-//	// Ping the primary
-//	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-//		panic(err)
-//	}
-//
-//	fmt.Println("Successfully connected and pinged.")
-//
-//	insertResult, error := client.Database("timelyship-dev-db").Collection("users").InsertOne(ctx, user)
-//	if error != nil {
-//		fmt.Println("db-error:", error)
-//		return utility.NewInternalServerError("Could not insert to database. Try after some time.")
-//	}
-//	fmt.Println("Successfully inserted", insertResult)
-//	return nil
-//}
-//
-//func GetById(id int64) (*domain.User, *utility.RestError) {
-//	return nil, nil
-//}
-//
-//func SavePerson(person *domain.Person) *utility.RestError {
-//	uri := "mongodb+srv://mongodbroot:s3curedp%40s%24w0rd89@mongowork.sxfuk.mongodb.net/?retryWrites=true&w=majority"
-//	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-//	defer cancel()
-//
-//	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-//	if err != nil {
-//		return utility.NewInternalServerError("Could not connect to database.Try after some time.")
-//	}
-//
-//	defer func() {
-//		if err = client.Disconnect(ctx); err != nil {
-//			panic(err)
-//		}
-//	}()
-//
-//	// Ping the primary
-//	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-//		panic(err)
-//	}
-//
-//	fmt.Println("Successfully connected and pinged.")
-//
-//	insertResult, error := client.Database("timelyship-dev-db").Collection("users").InsertOne(ctx, person)
-//	if error != nil {
-//		fmt.Println("db-error:", error)
-//		return utility.NewInternalServerError("Could not insert to database. Try after some time.")
-//	}
-//	fmt.Println("Successfully inserted", insertResult)
-//	return nil
-//}
 
 func GetUserByGoogleId(googleId string) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -99,7 +20,7 @@ func GetUserByGoogleId(googleId string) (*domain.User, *utility.RestError) {
 	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
-		return nil, utility.NewInternalServerError("Could not insert to database. Try after some time.")
+		return nil, utility.NewInternalServerError("Could not insert to database. Try after some time.", &error)
 	}
 	return &result, nil
 }
@@ -111,7 +32,26 @@ func SaveUser(user *domain.User) *utility.RestError {
 	fmt.Printf("%v\n", insertResult)
 	if error != nil {
 		fmt.Println("db-error:", error)
-		return utility.NewInternalServerError("Could not insert to database. Try after some time.")
+		return utility.NewInternalServerError("Could not insert to database. Try after some time.", &error)
 	}
 	return nil
+}
+
+func IsExistingEmail(email string) (bool, *utility.RestError) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	// https://stackoverflow.com/questions/51179588/how-to-sort-and-limit-results-in-mongodb/51181206
+	options := options.Find()
+	options.SetLimit(1)
+	filter := bson.D{{"$or", bson.A{
+		bson.D{{"primary_email", email}},
+		bson.D{{"google_auth_info.email", email}},
+		bson.D{{"facebook_auth_info.email", email}},
+	}}}
+	count, error := GetCollection(USER_COLLECTION).CountDocuments(ctx, filter)
+	if error != nil {
+		fmt.Println("db-error:", error)
+		return false, utility.NewInternalServerError("Could not query.", &error)
+	}
+	return count > 0, nil
 }

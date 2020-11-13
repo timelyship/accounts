@@ -14,11 +14,7 @@ func SignUp(c *gin.Context) {
 		c.JSON(restErr.Status, restErr)
 		return
 	}
-	validationError := signUpRequest.Validate()
-	if validationError != nil {
-		c.JSON(validationError.Status, validationError)
-		return
-	}
+
 	err := service.InitiateSignUp(signUpRequest)
 }
 

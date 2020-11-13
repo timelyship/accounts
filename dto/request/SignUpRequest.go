@@ -12,11 +12,12 @@ type SignUpRequest struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
+	Password  string `json:"password"`
 }
 
-func (r SignUpRequest) Validate() *utility.RestError {
+func (r SignUpRequest) ApplyUiValidation() *utility.RestError {
 	validationErrors := make([]error, 0)
-	/* Validate first name*/
+	/* ApplyUiValidation first name*/
 	if len(r.FirstName) == 0 {
 		validationErrors = append(validationErrors, errors.New("firstName should not be empty"))
 	}
@@ -24,7 +25,7 @@ func (r SignUpRequest) Validate() *utility.RestError {
 		validationErrors = append(validationErrors, errors.New(
 			fmt.Sprintf("firstName should be within[0,%v] characters", application.INT_CONST.FIRST_NAME_MAX_LEN)))
 	}
-	/* Validate last name*/
+	/* ApplyUiValidation last name*/
 	if len(r.LastName) == 0 {
 		validationErrors = append(validationErrors, errors.New("lastName should not be empty"))
 	}
@@ -32,7 +33,7 @@ func (r SignUpRequest) Validate() *utility.RestError {
 		validationErrors = append(validationErrors, errors.New(
 			fmt.Sprintf("lastName should be within[0,%v] characters", application.INT_CONST.LAST_NAME_MAX_LEN)))
 	}
-	/* Validate email*/
+	/* ApplyUiValidation email*/
 	if len(r.Email) == 0 {
 		validationErrors = append(validationErrors, errors.New("email should not be empty"))
 	}

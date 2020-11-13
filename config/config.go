@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -48,3 +50,12 @@ func flatten(root string, configMap map[interface{}]interface{}) {
 		}
 	}
 }
+
+func GetQueue() *sqs.SQS {
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+	return sqs.New(sess)
+}
+
+var AmazonSqs = GetQueue()
