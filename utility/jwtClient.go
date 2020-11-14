@@ -1,15 +1,20 @@
 package utility
 
 import (
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"time"
 	"timelyship.com/accounts/domain"
 )
 
+// todo - refactor this one.
 func CreateToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
-	td := &domain.TokenDetails{}
+	td := &domain.TokenDetails{
+		BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+	}
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
 	td.AccessUuid = uuid.New().String()
 
@@ -38,6 +43,24 @@ func CreateToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
 	return td, nil
 }
 
+func CreateAccessToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
+	td := &domain.TokenDetails{}
+	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	td.AccessUuid = uuid.New().String()
+
+	var err error
+	//Creating Access Token
+	//iss, sub string, aud string, exp, nbf, iat int64, jti string, typ string
+	atClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.Id.Hex(), aud,
+		td.AtExpires, time.Now().Unix(), time.Now().Unix(), td.AccessUuid, "jwt")
+	addAdditionalClaims(&atClaims, user)
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	if err != nil {
+		return nil, err
+	}
+	return td, nil
+}
 func addAdditionalClaims(claims *jwt.MapClaims, user *domain.User) {
 	(*claims)["first_name"] = user.FirstName
 	(*claims)["last_name"] = user.LastName
@@ -59,4 +82,27 @@ func mapClaims(iss, sub, aud string, exp, nbf, iat int64, jti, typ string) jwt.M
 	atClaims["jti"] = jti
 	atClaims["typ"] = typ
 	return atClaims
+}
+
+func DecodeToken(jwtTokenRaw string, secret string) (*jwt.MapClaims, *RestError) {
+	token, err := jwt.Parse(jwtTokenRaw, func(token *jwt.Token) (interface{}, error) {
+		//Make sure that the token method conform to "SigningMethodHMAC"
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(secret), nil
+	})
+	//if there is an error, the token must have expired
+	if err != nil {
+		return nil, NewUnAuthorizedError("Unauthorized", &err)
+	}
+	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+		return nil, NewUnAuthorizedError("Unauthorized", nil)
+	}
+	//Since token is valid, get the uuid:
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		return &claims, nil
+	}
+	return nil, NewUnAuthorizedError("Invalid token", &err)
 }

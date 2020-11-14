@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 	"timelyship.com/accounts/domain"
@@ -33,6 +34,19 @@ func GetUserByEmail(email string) (*domain.User, *utility.RestError) {
 		bson.D{{"google_auth_info.email", email}},
 		bson.D{{"facebook_auth_info.email", email}},
 	}}}
+	result := domain.User{}
+	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	if error != nil {
+		fmt.Println("db-error:", error)
+		return nil, utility.NewInternalServerError("Could not query.", &error)
+	}
+	return &result, nil
+}
+
+func GetUserById(id primitive.ObjectID) (*domain.User, *utility.RestError) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	filter := bson.D{{"_id", id}}
 	result := domain.User{}
 	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
