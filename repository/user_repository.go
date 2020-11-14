@@ -42,6 +42,35 @@ func GetUserByEmail(email string) (*domain.User, *utility.RestError) {
 	return &result, nil
 }
 
+func GetUserByEmailOrPhone(email, phone string) (*domain.User, *utility.RestError) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	verifiedEmailFilter := getVerifiedEmailFilter(email)
+	verifiedPhoneFilter := getVerifiedPhoneFilter(phone)
+	filter := bson.D{{"$or", bson.A{verifiedEmailFilter, verifiedPhoneFilter}}}
+	result := domain.User{}
+	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	if error != nil {
+		fmt.Println("db-error:", error)
+		return nil, utility.NewInternalServerError("Could not query.", &error)
+	}
+	return &result, nil
+}
+
+func getVerifiedEmailFilter(email string) bson.D {
+	return bson.D{{"$and", bson.A{
+		bson.D{{"primary_email", email}},
+		bson.D{{"is_primary_email_verified", true}},
+	}}}
+}
+
+func getVerifiedPhoneFilter(phone string) bson.D {
+	return bson.D{{"$and", bson.A{
+		bson.D{{"phone_numbers.number", phone}},
+		bson.D{{"phone_numbers.is_verified", true}},
+	}}}
+}
+
 func SaveUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

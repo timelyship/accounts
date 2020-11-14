@@ -9,9 +9,9 @@ import (
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 type PhoneNumber struct {
-	Number     string
-	IsPrimary  bool
-	IsVerified bool
+	Number     string `bson:"number"`
+	IsPrimary  bool   `bson:"is_primary"`
+	IsVerified bool   `bson:"is_verified"`
 }
 
 type GoogleAuthInfo struct {
