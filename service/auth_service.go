@@ -1,8 +1,13 @@
 package service
 
 import (
+	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
+	"strings"
+	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
 	"timelyship.com/accounts/repository"
@@ -10,7 +15,7 @@ import (
 )
 
 func HandleLogin(loginRequest request.LoginRequest) (*response.LoginResponse, *utility.RestError) {
-	user, err := repository.GetUserByEmailOrPhone(loginRequest.Email, loginRequest.Phone)
+	user, err := repository.GetUserByEmailOrPhone(loginRequest.EmailOrPhone)
 	if err != nil {
 		return nil, utility.NewUnAuthorizedError("User not found", nil)
 	}
@@ -64,5 +69,65 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 		RefreshToken: token.RefreshToken,
 		AccessToken:  token.AccessToken,
 	}, nil
+}
 
+func GenerateCode(token *jwt.Token, newAud, state string) (string, *utility.RestError) {
+	encKey, encKErr := repository.GetEncKeyByState(state)
+	if encKErr != nil || encKey == "" {
+		return "", utility.NewUnAuthorizedError("Invalid state", &encKErr.Error)
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", utility.NewUnAuthorizedError("Can not get claims", nil)
+	}
+	curAud := claims["curAud"].(string)
+	if curAud != "*" {
+		return "", utility.NewUnAuthorizedError("Insufficient privilege", nil)
+	}
+	userId, hErr := primitive.ObjectIDFromHex(claims["sub"].(string))
+	if hErr != nil {
+		return "", utility.NewUnAuthorizedError("Internal error", &hErr)
+	}
+	user, uError := repository.GetUserById(userId)
+	if uError != nil {
+		return "", utility.NewUnAuthorizedError("User could be fetched", &uError.Error)
+	}
+	tokenDetails, tErr := utility.CreateToken(user, newAud)
+	if tErr != nil {
+		return "", utility.NewUnAuthorizedError("Could not generate token", &tErr)
+	}
+	saveErr := repository.SaveToken(tokenDetails)
+	if saveErr != nil {
+		return "", utility.NewUnAuthorizedError("Token persistence failed", &saveErr.Error)
+	}
+	loginResponse := response.LoginResponse{
+		RefreshToken: tokenDetails.RefreshToken,
+		AccessToken:  tokenDetails.AccessToken,
+	}
+	bytes, jErr := json.Marshal(loginResponse)
+	if jErr != nil {
+		return "", utility.NewUnAuthorizedError("Could not marshal login response", &jErr)
+	}
+	code, err := utility.AESEncrypt(bytes, []byte(encKey))
+	if err != nil {
+		return "", utility.NewUnAuthorizedError("Encryption failed", &err.Error)
+	}
+	return code, nil
+}
+
+func InitiateLogin() (*map[string]string, *utility.RestError) {
+	state := strings.Replace(uuid.New().String(), "-", "", -1)
+	key := strings.Replace(uuid.New().String(), "-", "", -1)
+	loginState := &domain.LoginState{
+		State: state,
+		Key:   key,
+	}
+	err := repository.SaveLoginState(loginState)
+	if err != nil {
+		return nil, err
+	}
+	return &map[string]string{
+		"state": state,
+		"key":   key,
+	}, nil
 }

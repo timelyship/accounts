@@ -106,3 +106,14 @@ func DecodeToken(jwtTokenRaw string, secret string) (*jwt.MapClaims, *RestError)
 	}
 	return nil, NewUnAuthorizedError("Invalid token", &err)
 }
+
+func ValidateToken(encodedToken, secret string) (*jwt.Token, error) {
+	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
+		if _, isValid := token.Method.(*jwt.SigningMethodHMAC); !isValid {
+			return nil, fmt.Errorf("Invalid token %v", token.Header["alg"])
+
+		}
+		return []byte(secret), nil
+	})
+
+}

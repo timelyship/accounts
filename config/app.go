@@ -3,7 +3,11 @@ package config
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
+	"os"
+	"strings"
 	"time"
+	"timelyship.com/accounts/utility"
 )
 
 var (
@@ -13,21 +17,13 @@ var (
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
-
-		// Set example variable
-		c.Set("example", "12345")
-
 		// before request
-
 		c.Next()
-
 		// after request
 		latency := time.Since(t)
-		log.Print(latency)
-
 		// access the status we are sending
 		status := c.Writer.Status()
-		log.Println(status)
+		log.Println(latency, status)
 	}
 }
 func CORSMiddleware() gin.HandlerFunc {
@@ -45,9 +41,34 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+func AuthenticationMiddleWare() gin.HandlerFunc {
+	whiteListedUrls := []string{"/account/login","/account/sign-up"}
+	return func(c *gin.Context) {
+		if utility.ContainsStr(whiteListedUrls,c.Request.RequestURI){
+			c.Next()
+			return
+		}
+		const BEARER_SCHEMA = "Bearer"
+		authHeader := c.GetHeader("Authorization")
+		if !strings.Contains(authHeader, BEARER_SCHEMA) {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		tokenString := authHeader[len(BEARER_SCHEMA):]
+		token, err := utility.ValidateToken(tokenString, os.Getenv("ACCESS_SECRET"))
+		if err == nil && token.Valid {
+			c.Set("token",token)
+			c.Next()
+		} else {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+	}
+}
+
 func Start() {
 	router.Use(Logger())
 	router.Use(CORSMiddleware())
+	router.Use(AuthenticationMiddleWare())
 	mapUrls()
 	router.Run(":8080")
 }

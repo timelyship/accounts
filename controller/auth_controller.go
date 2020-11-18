@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
@@ -23,8 +24,13 @@ func Login(c *gin.Context) {
 	}
 }
 
-func InitiateLogin() {
-
+func InitiateLogin(c *gin.Context) {
+	resp, err := service.InitiateLogin()
+	if err != nil {
+		c.JSON(err.Status, err)
+	} else {
+		c.JSON(200, resp)
+	}
 }
 
 func RefreshToken(c *gin.Context) {
@@ -39,6 +45,25 @@ func RefreshToken(c *gin.Context) {
 		c.JSON(err.Status, err)
 	} else {
 		c.JSON(200, loginResponse)
+	}
+
+}
+
+func GenerateCode(c *gin.Context) {
+	token, ok := c.MustGet("token").(*jwt.Token)
+	aud := c.Query("aud")
+	state := c.Query("state")
+	if !ok {
+		c.JSON(401, nil)
+	} else {
+		code, err := service.GenerateCode(token, aud, state)
+		if err != nil {
+			c.JSON(err.Status, err)
+		} else {
+			c.JSON(200, map[string]string{
+				"code": code,
+			})
+		}
 	}
 
 }

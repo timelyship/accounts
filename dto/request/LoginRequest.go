@@ -5,14 +5,13 @@ import (
 )
 
 type LoginRequest struct {
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
+	EmailOrPhone    string `json:"emailOrPhone"`
 	Password string `json:"password"`
 }
 
 func (r LoginRequest) ApplyUiValidation() *utility.RestError {
-	if r.Email == "" && r.Phone == "" {
-		return utility.NewBadRequestError("Both email and phone number can not be empty", nil)
+	if r.EmailOrPhone == "" {
+		return utility.NewBadRequestError("EmailOrPhone field can not be empty", nil)
 	}
 	return nil
 }

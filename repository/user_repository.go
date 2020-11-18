@@ -56,11 +56,11 @@ func GetUserById(id primitive.ObjectID) (*domain.User, *utility.RestError) {
 	return &result, nil
 }
 
-func GetUserByEmailOrPhone(email, phone string) (*domain.User, *utility.RestError) {
+func GetUserByEmailOrPhone(emailOrPhone string) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	verifiedEmailFilter := getVerifiedEmailFilter(email)
-	verifiedPhoneFilter := getVerifiedPhoneFilter(phone)
+	verifiedEmailFilter := getVerifiedEmailFilter(emailOrPhone)
+	verifiedPhoneFilter := getVerifiedPhoneFilter(emailOrPhone)
 	filter := bson.D{{"$or", bson.A{verifiedEmailFilter, verifiedPhoneFilter}}}
 	result := domain.User{}
 	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
@@ -71,16 +71,16 @@ func GetUserByEmailOrPhone(email, phone string) (*domain.User, *utility.RestErro
 	return &result, nil
 }
 
-func getVerifiedEmailFilter(email string) bson.D {
+func getVerifiedEmailFilter(emailOrPhone string) bson.D {
 	return bson.D{{"$and", bson.A{
-		bson.D{{"primary_email", email}},
+		bson.D{{"primary_email", emailOrPhone}},
 		bson.D{{"is_primary_email_verified", true}},
 	}}}
 }
 
-func getVerifiedPhoneFilter(phone string) bson.D {
+func getVerifiedPhoneFilter(emailOrPhone string) bson.D {
 	return bson.D{{"$and", bson.A{
-		bson.D{{"phone_numbers.number", phone}},
+		bson.D{{"phone_numbers.number", emailOrPhone}},
 		bson.D{{"phone_numbers.is_verified", true}},
 	}}}
 }
