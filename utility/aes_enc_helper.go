@@ -1,13 +1,15 @@
 package utility
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"github.com/mergermarket/go-pkcs7"
 	"io"
+	"log"
 )
 
 func SimpleAESEncrypt(key []byte, unencrypted string) (string, *RestError) {
@@ -36,25 +38,17 @@ func SimpleAESEncrypt(key []byte, unencrypted string) (string, *RestError) {
 	mode := cipher.NewCBCEncrypter(block, iv)
 	mode.CryptBlocks(cipherText[aes.BlockSize:], plainText)
 
-	return fmt.Sprintf("%x", cipherText), nil
+	data := fmt.Sprintf("%x", cipherText)
+	return data, nil
 }
-
-func AESEncrypt(text []byte, key []byte) (string, *RestError) {
-	const ENC_ERROR = "ENC_ERROR"
-	c, cErr := aes.NewCipher(key)
-	if cErr != nil {
-		return "", NewInternalServerError(ENC_ERROR, &cErr)
+func zip(data string) string {
+	var b bytes.Buffer
+	gz := gzip.NewWriter(&b)
+	if _, err := gz.Write([]byte(data)); err != nil {
+		log.Fatal(err)
 	}
-	gcm, gcmErr := cipher.NewGCM(c)
-	if gcmErr != nil {
-		return "", NewInternalServerError(ENC_ERROR, &gcmErr)
+	if err := gz.Close(); err != nil {
+		log.Fatal(err)
 	}
-
-	nonce := make([]byte, gcm.NonceSize())
-	if _, rErr := io.ReadFull(rand.Reader, nonce); rErr != nil {
-		return "", NewInternalServerError(ENC_ERROR, &rErr)
-	}
-	result := gcm.Seal(nonce, nonce, text, nil)
-	encodedResult := base64.StdEncoding.EncodeToString(result)
-	return encodedResult, nil
+	return string(b.Bytes())
 }

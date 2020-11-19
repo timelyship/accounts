@@ -41,10 +41,20 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+func isWhiteListed(uri string)bool  {
+	whiteListedUrls := []string{"/account/login","/account/sign-up","/initiate-login","/decode-code","/exchange-code"}
+	for _, a := range whiteListedUrls {
+		if strings.HasPrefix(uri,a) {
+			return true
+		}
+	}
+	return false
+}
+
 func AuthenticationMiddleWare() gin.HandlerFunc {
-	whiteListedUrls := []string{"/account/login","/account/sign-up","/initiate-login","/decode-code"}
+
 	return func(c *gin.Context) {
-		if utility.ContainsStr(whiteListedUrls,c.Request.RequestURI){
+		if isWhiteListed(c.Request.RequestURI){
 			c.Next()
 			return
 		}

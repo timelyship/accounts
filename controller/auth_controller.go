@@ -56,14 +56,24 @@ func GenerateCode(c *gin.Context) {
 	if !ok {
 		c.JSON(401, nil)
 	} else {
-		code, err := service.GenerateCode(token, aud, state)
+		err := service.GenerateCode(token, aud, state)
 		if err != nil {
 			c.JSON(err.Status, err)
 		} else {
-			c.JSON(200, map[string]string{
-				"code": code,
-			})
+			c.JSON(200, nil)
 		}
 	}
 
+}
+
+func ExchangeCode(c *gin.Context) {
+	state := c.Query("state")
+	data, err := service.ExchangeCode(state)
+	if err != nil {
+		c.JSON(err.Status, err)
+	} else {
+		c.JSON(200, map[string]string{
+			"code": data.Code,
+		})
+	}
 }

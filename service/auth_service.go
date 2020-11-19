@@ -72,55 +72,62 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 	}, nil
 }
 
-func GenerateCode(token *jwt.Token, newAud, state string) (string, *utility.RestError) {
-	encKey, encKErr := repository.GetEncKeyByState(state)
-	if encKErr != nil || encKey == "" {
-		return "", utility.NewUnAuthorizedError("Invalid state", &encKErr.Error)
+func GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
+	loginState, encKErr := repository.GetLoginState(state)
+	if encKErr != nil || loginState.Key == "" {
+		return utility.NewUnAuthorizedError("Invalid state", &encKErr.Error)
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", utility.NewUnAuthorizedError("Can not get claims", nil)
+		return utility.NewUnAuthorizedError("Can not get claims", nil)
 	}
 	curAud := claims["aud"].(string)
 	if curAud != "*" {
-		return "", utility.NewUnAuthorizedError("Insufficient privilege", nil)
+		return utility.NewUnAuthorizedError("Insufficient privilege", nil)
 	}
 	userId, hErr := primitive.ObjectIDFromHex(claims["sub"].(string))
 	if hErr != nil {
-		return "", utility.NewUnAuthorizedError("Internal error", &hErr)
+		return utility.NewUnAuthorizedError("Internal error", &hErr)
 	}
 	user, uError := repository.GetUserById(userId)
 	if uError != nil {
-		return "", utility.NewUnAuthorizedError("User could be fetched", &uError.Error)
+		return utility.NewUnAuthorizedError("User could be fetched", &uError.Error)
 	}
 	tokenDetails, tErr := utility.CreateToken(user, newAud)
 	if tErr != nil {
-		return "", utility.NewUnAuthorizedError("Could not generate token", &tErr)
+		return utility.NewUnAuthorizedError("Could not generate token", &tErr)
 	}
 	saveErr := repository.SaveToken(tokenDetails)
 	if saveErr != nil {
-		return "", utility.NewUnAuthorizedError("Token persistence failed", &saveErr.Error)
+		return utility.NewUnAuthorizedError("Token persistence failed", &saveErr.Error)
 	}
 	loginResponse := response.LoginResponse{
 		RefreshToken: tokenDetails.RefreshToken,
 		AccessToken:  tokenDetails.AccessToken,
 	}
 	bytes, jErr := json.Marshal(loginResponse)
-	fmt.Println("jwts",string(bytes))
+	fmt.Println("jwts", string(bytes))
 	if jErr != nil {
-		return "", utility.NewUnAuthorizedError("Could not marshal login response", &jErr)
+		return utility.NewUnAuthorizedError("Could not marshal login response", &jErr)
 	}
-	code, err := utility.SimpleAESEncrypt([]byte(encKey),string(bytes))
+	code, err := utility.SimpleAESEncrypt([]byte(loginState.Key), string(bytes))
 	if err != nil {
-		return "", utility.NewUnAuthorizedError("Encryption failed", &err.Error)
+		return utility.NewUnAuthorizedError("Encryption failed", &err.Error)
 	}
-	fmt.Println(code)
-	fmt.Println(encKey)
-	return code, nil
+	loginState.Code = code
+	updErr := repository.UpdateLoginState(loginState)
+	if updErr != nil {
+		return utility.NewUnAuthorizedError("Login state upd failed", &updErr.Error)
+	}
+	return nil
 }
 
 func InitiateLogin() (*map[string]string, *utility.RestError) {
-	state := strings.Replace(uuid.New().String(), "-", "", -1)
+	state1 := strings.Replace(uuid.New().String(), "-", "", -1)
+	state2 := strings.Replace(uuid.New().String(), "-", "", -1)
+	state3 := strings.Replace(uuid.New().String(), "-", "", -1)
+	state4 := strings.Replace(uuid.New().String(), "-", "", -1)
+	state := state1 + state2 + state3 + state4
 	key := strings.Replace(uuid.New().String(), "-", "", -1)
 	loginState := &domain.LoginState{
 		State: state,
@@ -134,4 +141,12 @@ func InitiateLogin() (*map[string]string, *utility.RestError) {
 		"state": state,
 		"key":   key,
 	}, nil
+}
+
+func ExchangeCode(state string) (*domain.LoginState, *utility.RestError) {
+	data, err := repository.GetLoginState(state)
+	if err != nil {
+		return nil, utility.NewUnAuthorizedError("Invalid state", &err.Error)
+	}
+	return data, nil
 }
