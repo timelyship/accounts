@@ -106,10 +106,11 @@ func GenerateCode(token *jwt.Token, newAud, state string) (string, *utility.Rest
 		AccessToken:  tokenDetails.AccessToken,
 	}
 	bytes, jErr := json.Marshal(loginResponse)
+	fmt.Println("jwts",string(bytes))
 	if jErr != nil {
 		return "", utility.NewUnAuthorizedError("Could not marshal login response", &jErr)
 	}
-	code, err := utility.AESEncrypt(bytes, []byte(encKey))
+	code, err := utility.SimpleAESEncrypt([]byte(encKey),string(bytes))
 	if err != nil {
 		return "", utility.NewUnAuthorizedError("Encryption failed", &err.Error)
 	}
