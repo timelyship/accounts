@@ -17,4 +17,5 @@ func mapUrls() {
 	router.POST("/verify-email/:verificationToken", controller.VerifyEmail)
 	router.GET("/initiate-login", controller.InitiateLogin)
 	router.GET("/generate-code", controller.GenerateCode)
+	router.GET("/decode-code", controller.Decode)
 }

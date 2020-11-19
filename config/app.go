@@ -42,13 +42,13 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func AuthenticationMiddleWare() gin.HandlerFunc {
-	whiteListedUrls := []string{"/account/login","/account/sign-up"}
+	whiteListedUrls := []string{"/account/login","/account/sign-up","/initiate-login","/decode-code"}
 	return func(c *gin.Context) {
 		if utility.ContainsStr(whiteListedUrls,c.Request.RequestURI){
 			c.Next()
 			return
 		}
-		const BEARER_SCHEMA = "Bearer"
+		const BEARER_SCHEMA = "Bearer "
 		authHeader := c.GetHeader("Authorization")
 		if !strings.Contains(authHeader, BEARER_SCHEMA) {
 			c.AbortWithStatus(http.StatusUnauthorized)

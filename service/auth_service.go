@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -80,7 +81,7 @@ func GenerateCode(token *jwt.Token, newAud, state string) (string, *utility.Rest
 	if !ok {
 		return "", utility.NewUnAuthorizedError("Can not get claims", nil)
 	}
-	curAud := claims["curAud"].(string)
+	curAud := claims["aud"].(string)
 	if curAud != "*" {
 		return "", utility.NewUnAuthorizedError("Insufficient privilege", nil)
 	}
@@ -112,6 +113,8 @@ func GenerateCode(token *jwt.Token, newAud, state string) (string, *utility.Rest
 	if err != nil {
 		return "", utility.NewUnAuthorizedError("Encryption failed", &err.Error)
 	}
+	fmt.Println(code)
+	fmt.Println(encKey)
 	return code, nil
 }
 

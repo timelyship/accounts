@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"io"
 )
 
@@ -23,5 +24,6 @@ func AESEncrypt(text []byte, key []byte) (string, *RestError) {
 		return "", NewInternalServerError(ENC_ERROR, &rErr)
 	}
 	result := gcm.Seal(nonce, nonce, text, nil)
-	return string(result), nil
+	encodedResult :=base64.StdEncoding.EncodeToString(result)
+	return encodedResult, nil
 }

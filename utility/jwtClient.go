@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
+	"strconv"
 	"time"
 	"timelyship.com/accounts/domain"
 )
@@ -15,10 +16,12 @@ func CreateToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
 	td := &domain.TokenDetails{
 		BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 	}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	accessTokenExpInMinute, _ := strconv.Atoi(os.Getenv("ACCESS_TOKEN_EXP_MINUTE"))
+	refreshTokenExpInMinute, _ := strconv.Atoi(os.Getenv("ACCESS_TOKEN_EXP_MINUTE"))
+	td.AtExpires = time.Now().Add(time.Minute * time.Duration(accessTokenExpInMinute)).Unix()
 	td.AccessUuid = uuid.New().String()
 
-	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	td.RtExpires = time.Now().Add(time.Hour * time.Duration(refreshTokenExpInMinute)).Unix()
 	td.RefreshUuid = uuid.New().String()
 
 	var err error
@@ -108,12 +111,12 @@ func DecodeToken(jwtTokenRaw string, secret string) (*jwt.MapClaims, *RestError)
 }
 
 func ValidateToken(encodedToken, secret string) (*jwt.Token, error) {
-	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
+	tokenValidator := func(token *jwt.Token) (interface{}, error) {
 		if _, isValid := token.Method.(*jwt.SigningMethodHMAC); !isValid {
 			return nil, fmt.Errorf("Invalid token %v", token.Header["alg"])
-
 		}
 		return []byte(secret), nil
-	})
+	}
+	return jwt.Parse(encodedToken, tokenValidator)
 
 }
