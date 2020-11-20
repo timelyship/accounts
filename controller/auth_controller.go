@@ -77,3 +77,17 @@ func ExchangeCode(c *gin.Context) {
 		})
 	}
 }
+
+func Profile(c *gin.Context) {
+	token, ok := c.MustGet("token").(*jwt.Token)
+	if !ok {
+		c.JSON(401, "token not ok")
+		return
+	}
+	claims, err := utility.GetProfileClaims(token)
+	if err != nil {
+		c.JSON(401, err)
+		return
+	}
+	c.JSON(200, claims)
+}

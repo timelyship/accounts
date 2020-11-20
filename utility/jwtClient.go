@@ -29,7 +29,7 @@ func CreateToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
 	//iss, sub string, aud string, exp, nbf, iat int64, jti string, typ string
 	atClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.Id.Hex(), aud,
 		td.AtExpires, time.Now().Unix(), time.Now().Unix(), td.AccessUuid, "jwt")
-	addAdditionalClaims(&atClaims, user)
+	addProfileClaims(&atClaims, user)
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
 	if err != nil {
@@ -56,7 +56,7 @@ func CreateAccessToken(user *domain.User, aud string) (*domain.TokenDetails, err
 	//iss, sub string, aud string, exp, nbf, iat int64, jti string, typ string
 	atClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.Id.Hex(), aud,
 		td.AtExpires, time.Now().Unix(), time.Now().Unix(), td.AccessUuid, "jwt")
-	addAdditionalClaims(&atClaims, user)
+	addProfileClaims(&atClaims, user)
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
 	if err != nil {
@@ -64,7 +64,7 @@ func CreateAccessToken(user *domain.User, aud string) (*domain.TokenDetails, err
 	}
 	return td, nil
 }
-func addAdditionalClaims(claims *jwt.MapClaims, user *domain.User) {
+func addProfileClaims(claims *jwt.MapClaims, user *domain.User) {
 	(*claims)["first_name"] = user.FirstName
 	(*claims)["last_name"] = user.LastName
 	(*claims)["email"] = user.PrimaryEmail
@@ -119,4 +119,18 @@ func ValidateToken(encodedToken, secret string) (*jwt.Token, error) {
 	}
 	return jwt.Parse(encodedToken, tokenValidator)
 
+}
+
+func GetProfileClaims(token *jwt.Token) (map[string]interface{}, *RestError) {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, NewUnAuthorizedError("Token could not be decoded", nil)
+	}
+	return map[string]interface{}{
+		"firstName": claims["first_name"],
+		"lastName":  claims["last_name"],
+		"email":      claims["email"],
+		"picture":    claims["picture"],
+		"roles":      claims["first_name"],
+	}, nil
 }
