@@ -20,4 +20,5 @@ func mapUrls() {
 	router.GET("/decode-code", controller.Decode)
 	router.GET("/exchange-code", controller.ExchangeCode)
 	router.GET("/profile", controller.Profile)
+	router.GET("/logout", controller.Logout)
 }
