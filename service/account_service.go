@@ -36,7 +36,7 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 		PrimaryEmail:           signUpRequest.Email,
 		IsPrimaryEmailVerified: false,
 		Password:               utility.HashPassword(signUpRequest.Password),
-		Roles:                  []domain.Role{domain.APP_USER_ROLE},
+		Roles:                  []*domain.Role{&domain.APP_USER_ROLE},
 	}
 	sErr := repository.SaveUser(&user)
 	if sErr != nil {

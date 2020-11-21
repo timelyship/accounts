@@ -42,7 +42,7 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func isWhiteListed(uri string)bool  {
-	whiteListedUrls := []string{"/account/login","/account/sign-up","/initiate-login","/decode-code","/exchange-code","/logout"}
+	whiteListedUrls := []string{"/account/login","/account/sign-up","/initiate-login","/decode-code","/exchange-code","/logout","/verify-email"}
 	for _, a := range whiteListedUrls {
 		if strings.HasPrefix(uri,a) {
 			return true
