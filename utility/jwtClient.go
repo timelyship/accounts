@@ -129,8 +129,8 @@ func GetProfileClaims(token *jwt.Token) (map[string]interface{}, *RestError) {
 	return map[string]interface{}{
 		"firstName": claims["first_name"],
 		"lastName":  claims["last_name"],
-		"email":      claims["email"],
-		"picture":    claims["picture"],
-		"roles":      claims["first_name"],
+		"email":     claims["email"],
+		"picture":   claims["picture"],
+		"roles":     claims["roles"],
 	}, nil
 }
