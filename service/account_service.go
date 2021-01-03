@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -25,7 +24,7 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 	if isExistingEmail, error := repository.IsExistingEmail(signUpRequest.Email); error != nil {
 		return error
 	} else if isExistingEmail {
-		bizError := errors.New(fmt.Sprintf("An user already exists with email %s", signUpRequest.Email))
+		bizError := fmt.Errorf("An user already exists with email %s", signUpRequest.Email)
 		return utility.NewBadRequestError("Email Already exists", &bizError)
 	}
 	// create user
@@ -36,7 +35,7 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 		PrimaryEmail:           signUpRequest.Email,
 		IsPrimaryEmailVerified: false,
 		Password:               utility.HashPassword(signUpRequest.Password),
-		Roles:                  []*domain.Role{&domain.APP_USER_ROLE},
+		Roles:                  []*domain.Role{&domain.AppUserRole},
 	}
 	sErr := repository.SaveUser(&user)
 	if sErr != nil {
