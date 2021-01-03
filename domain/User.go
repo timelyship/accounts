@@ -1,12 +1,11 @@
 package domain
 
 import (
-	"regexp"
 	"time"
 )
 
-// https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#email-state-typeemail
-var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+//// https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#email-state-typeemail
+//var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 type PhoneNumber struct {
 	Number     string `bson:"number"`
@@ -15,13 +14,13 @@ type PhoneNumber struct {
 }
 
 type GoogleAuthInfo struct {
-	Id      string
+	ID      string
 	Email   string // email must be verified
 	Picture string
 }
 
 type FacebookAuthInfo struct {
-	Id      string
+	ID      string
 	Email   string // email must be verified
 	Picture string
 }
@@ -31,10 +30,10 @@ type Role struct {
 	Parent *Role
 }
 
-var APP_USER_ROLE Role = Role{
-	Name:   "APP_USER",
-	Parent: nil,
-}
+//var APP_USER_ROLE Role = Role{
+//	Name:   "APP_USER",
+//	Parent: nil,
+//}
 
 type User struct {
 	BaseEntity             `bson:",inline"`

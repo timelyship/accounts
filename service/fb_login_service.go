@@ -25,7 +25,7 @@ func GetFBRedirectUri(uiState string) (string, error) {
 			fmt.Sprintf("security_token=%v&ui_state=%v", state, uiState),
 		)
 		fbState := domain.FBState{
-			BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+			BaseEntity: domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 			State:      fAuth.GetState(),
 		}
 		repository.SaveFBState(&fbState)

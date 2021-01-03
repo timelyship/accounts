@@ -100,7 +100,7 @@ func SaveUser(user *domain.User) *utility.RestError {
 func UpdateUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"_id", user.Id}}
+	filter := bson.D{{"_id", user.ID}}
 	updateResult := GetCollection(USER_COLLECTION).FindOneAndReplace(ctx, filter, user)
 	error := updateResult.Err()
 	if error != nil {

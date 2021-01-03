@@ -14,21 +14,21 @@ import (
 // todo - refactor this one.
 func CreateToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
 	td := &domain.TokenDetails{
-		BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+		BaseEntity: domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 	}
 	accessTokenExpInMinute, _ := strconv.Atoi(os.Getenv("ACCESS_TOKEN_EXP_MINUTE"))
 	refreshTokenExpInMinute, _ := strconv.Atoi(os.Getenv("ACCESS_TOKEN_EXP_MINUTE"))
 	td.AtExpires = time.Now().Add(time.Minute * time.Duration(accessTokenExpInMinute)).Unix()
-	td.AccessUuid = uuid.New().String()
+	td.AccessUUID = uuid.New().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * time.Duration(refreshTokenExpInMinute)).Unix()
-	td.RefreshUuid = uuid.New().String()
+	td.RefreshUUID = uuid.New().String()
 
 	var err error
 	//Creating Access Token
 	//iss, sub string, aud string, exp, nbf, iat int64, jti string, typ string
-	atClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.Id.Hex(), aud,
-		td.AtExpires, time.Now().Unix(), time.Now().Unix(), td.AccessUuid, "jwt")
+	atClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.ID.Hex(), aud,
+		td.AtExpires, time.Now().Unix(), time.Now().Unix(), td.AccessUUID, "jwt")
 	addProfileClaims(&atClaims, user)
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
@@ -36,8 +36,8 @@ func CreateToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
 		return nil, err
 	}
 	//Creating Refresh Token
-	rtClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.Id.Hex(), aud,
-		td.RtExpires, time.Now().Unix(), time.Now().Unix(), td.RefreshUuid, "jwt")
+	rtClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.ID.Hex(), aud,
+		td.RtExpires, time.Now().Unix(), time.Now().Unix(), td.RefreshUUID, "jwt")
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
 	if err != nil {
@@ -49,13 +49,13 @@ func CreateToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
 func CreateAccessToken(user *domain.User, aud string) (*domain.TokenDetails, error) {
 	td := &domain.TokenDetails{}
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
-	td.AccessUuid = uuid.New().String()
+	td.AccessUUID = uuid.New().String()
 
 	var err error
 	//Creating Access Token
 	//iss, sub string, aud string, exp, nbf, iat int64, jti string, typ string
-	atClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.Id.Hex(), aud,
-		td.AtExpires, time.Now().Unix(), time.Now().Unix(), td.AccessUuid, "jwt")
+	atClaims := mapClaims(os.Getenv("TOKEN_ISSUER"), user.ID.Hex(), aud,
+		td.AtExpires, time.Now().Unix(), time.Now().Unix(), td.AccessUUID, "jwt")
 	addProfileClaims(&atClaims, user)
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))

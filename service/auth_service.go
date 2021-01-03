@@ -60,7 +60,7 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 		return nil, utility.NewUnAuthorizedError("Failed to create access token", &tErr)
 	}
 	token.AccessToken = newAccessToken.AccessToken
-	token.AccessUuid = newAccessToken.AccessUuid
+	token.AccessUUID = newAccessToken.AccessUUID
 	token.AtExpires = newAccessToken.AtExpires
 	updErr := repository.UpdateToken(token)
 	if updErr != nil {

@@ -32,7 +32,7 @@ func GetGoogleRedirectUri(uiState string) (string, error) {
 			"",
 		)
 		googleState := domain.GoogleState{
-			BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+			BaseEntity: domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 			State:      gAuth.GetState(),
 		}
 		repository.SaveGoogleState(&googleState)
@@ -57,7 +57,7 @@ func HandleGoogleRedirect(values url.Values) string {
 			if existingUser == nil {
 				//create new user
 				existingUser = &domain.User{
-					BaseEntity:             domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+					BaseEntity:             domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 					FirstName:              userMap["given_name"].(string),
 					LastName:               userMap["family_name"].(string),
 					PrimaryEmail:           userMap["email"].(string),
@@ -66,7 +66,7 @@ func HandleGoogleRedirect(values url.Values) string {
 					DateCreated:            time.Now(),
 					DateUpdated:            time.Now(),
 					GoogleAuthInfo: domain.GoogleAuthInfo{
-						Id:      userMap["sub"].(string),
+						ID:      userMap["sub"].(string),
 						Email:   userMap["email"].(string),
 						Picture: userMap["picture"].(string),
 					},

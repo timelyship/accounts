@@ -27,7 +27,7 @@ func GetTokenByRefreshToken(refreshToken string) (*domain.TokenDetails, *utility
 func UpdateToken(token *domain.TokenDetails) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"_id", token.Id}}
+	filter := bson.D{{"_id", token.ID}}
 	updateResult := GetCollection(TOKEN_COLLECTION).FindOneAndReplace(ctx, filter, token)
 	error := updateResult.Err()
 	if error != nil {

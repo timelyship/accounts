@@ -30,7 +30,7 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 	}
 	// create user
 	user := domain.User{
-		BaseEntity:             domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+		BaseEntity:             domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		FirstName:              signUpRequest.FirstName,
 		LastName:               signUpRequest.LastName,
 		PrimaryEmail:           signUpRequest.Email,
@@ -53,7 +53,7 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 func sendEmailVerificationMail(user *domain.User) *utility.RestError {
 	secret := strings.Replace(uuid.New().String(), "-", "", -1)
 	vs := &domain.VerificationSecret{
-		BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+		BaseEntity: domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		Type:       application.StringConst.Email,
 		Subject:    user.PrimaryEmail,
 		Secret:     secret,
