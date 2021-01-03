@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-type GoogleOpenIdAuth struct {
+type GoogleOpenIDAuth struct {
 	responseType string
 	clientId     string
 	scopes       string
@@ -16,8 +16,8 @@ type GoogleOpenIdAuth struct {
 	hd           string //= example.com
 }
 
-func NewGoogleOpenIdAuth(responseType, clientId string, scopes string, redirectUri, state, nonce, hd, loginHint string) *GoogleOpenIdAuth {
-	return &GoogleOpenIdAuth{
+func NewGoogleOpenIdAuth(responseType, clientId string, scopes string, redirectUri, state, nonce, hd, loginHint string) *GoogleOpenIDAuth {
+	return &GoogleOpenIDAuth{
 		responseType: responseType,
 		clientId:     clientId,
 		scopes:       scopes,
@@ -29,7 +29,7 @@ func NewGoogleOpenIdAuth(responseType, clientId string, scopes string, redirectU
 	}
 }
 
-func (g *GoogleOpenIdAuth) BuildUri() string {
+func (g *GoogleOpenIDAuth) BuildUri() string {
 	scopeEncoded := url.QueryEscape(g.scopes)
 	fmt.Printf("b4=%v,af=%v\n", g.scopes, scopeEncoded)
 	fmt.Println("scopeEncoded = ", scopeEncoded)
@@ -43,6 +43,6 @@ func (g *GoogleOpenIdAuth) BuildUri() string {
 	return fmt.Sprintf(uri, g.clientId, scopeEncoded, g.redirectUri, stateEncoded, g.nonce)
 }
 
-func (g *GoogleOpenIdAuth) GetState() string {
+func (g *GoogleOpenIDAuth) GetState() string {
 	return g.state
 }

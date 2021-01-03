@@ -29,7 +29,7 @@ func GetFBRedirectUri(uiState string) (string, error) {
 			State:      fAuth.GetState(),
 		}
 		repository.SaveFBState(&fbState)
-		return fAuth.BuildUri(), nil
+		return fAuth.BuildURI(), nil
 	} else {
 		fmt.Println("UUID failed")
 	}
