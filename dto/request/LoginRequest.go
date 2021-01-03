@@ -5,11 +5,11 @@ import (
 )
 
 type LoginRequest struct {
-	EmailOrPhone    string `json:"emailOrPhone"`
-	Password string `json:"password"`
+	EmailOrPhone string `json:"emailOrPhone"`
+	Password     string `json:"password"`
 }
 
-func (r LoginRequest) ApplyUiValidation() *utility.RestError {
+func (r LoginRequest) ApplyUIValidation() *utility.RestError {
 	if r.EmailOrPhone == "" {
 		return utility.NewBadRequestError("EmailOrPhone field can not be empty", nil)
 	}

@@ -24,12 +24,13 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 	if isExistingEmail, error := repository.IsExistingEmail(signUpRequest.Email); error != nil {
 		return error
 	} else if isExistingEmail {
-		bizError := fmt.Errorf("An user already exists with email %s", signUpRequest.Email)
+		bizError := fmt.Errorf("an user already exists with email %s", signUpRequest.Email)
 		return utility.NewBadRequestError("Email Already exists", &bizError)
 	}
 	// create user
 	user := domain.User{
-		BaseEntity:             domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+		BaseEntity: domain.BaseEntity{
+			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		FirstName:              signUpRequest.FirstName,
 		LastName:               signUpRequest.LastName,
 		PrimaryEmail:           signUpRequest.Email,
@@ -50,9 +51,10 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 }
 
 func sendEmailVerificationMail(user *domain.User) *utility.RestError {
-	secret := strings.Replace(uuid.New().String(), "-", "", -1)
+	secret := strings.ReplaceAll(uuid.New().String(), "-", "")
 	vs := &domain.VerificationSecret{
-		BaseEntity: domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+		BaseEntity: domain.BaseEntity{
+			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		Type:       application.StringConst.Email,
 		Subject:    user.PrimaryEmail,
 		Secret:     secret,
@@ -63,7 +65,8 @@ func sendEmailVerificationMail(user *domain.User) *utility.RestError {
 		return err
 	}
 	msgPayload := dto.NewEmailVerificationMsgPayload(
-		application.StringConst.VerifyEmail, []string{user.PrimaryEmail}, []string{}, []string{"najim.ju@gmail.com"}, map[string]interface{}{
+		application.StringConst.VerifyEmail, []string{user.PrimaryEmail},
+		[]string{}, []string{"najim.ju@gmail.com"}, map[string]interface{}{
 			"fullName":       fmt.Sprintf("%v %v", user.FirstName, user.LastName),
 			"verificationId": secret,
 		},

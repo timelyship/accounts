@@ -22,7 +22,7 @@ func GetGoogleRedirectUri(uiState string) (string, error) {
 	if eUuid == nil && eNonce == nil {
 		scopes := os.Getenv("GOOGLE_OAUTH_SCOPES")
 		fmt.Println(uiState)
-		gAuth := dto.NewGoogleOpenIdAuth("code",
+		gAuth := dto.NewGoogleOpenIDAuth("code",
 			os.Getenv("GOOGLE_OAUTH_CLIENT_ID"),
 			scopes,
 			os.Getenv("GOOGLE_OAUTH_REDIRECT_URI"),
@@ -36,7 +36,7 @@ func GetGoogleRedirectUri(uiState string) (string, error) {
 			State:      gAuth.GetState(),
 		}
 		repository.SaveGoogleState(&googleState)
-		return gAuth.BuildUri(), nil
+		return gAuth.BuildURI(), nil
 	} else {
 		fmt.Println("UUID failed")
 	}

@@ -13,7 +13,7 @@ import (
 
 var (
 	router = gin.New()
-	logger = NewLogger()
+	Logger = NewLogger()
 )
 
 func NewLogger() *zap.Logger {
@@ -31,7 +31,7 @@ func NewLogger() *zap.Logger {
 	return l
 }
 
-func Logger() gin.HandlerFunc {
+func LogInterceptor() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
 		// before request
@@ -72,7 +72,6 @@ func isWhiteListed(uri string) bool {
 }
 
 func AuthenticationMiddleWare() gin.HandlerFunc {
-
 	return func(c *gin.Context) {
 		if isWhiteListed(c.Request.RequestURI) {
 			c.Next()
@@ -96,17 +95,17 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 }
 
 func syncLogger() {
-	_ = logger.Sync()
+	_ = Logger.Sync()
 }
 
 func Start() {
 	defer syncLogger()
-	router.Use(Logger())
+	router.Use(LogInterceptor())
 	router.Use(CORSMiddleware())
 	router.Use(AuthenticationMiddleWare())
 	mapUrls()
 	err := router.Run(":8080")
 	if err != nil {
-		logger.Error("Error starting app", zap.Error(err))
+		Logger.Error("Error starting app", zap.Error(err))
 	}
 }

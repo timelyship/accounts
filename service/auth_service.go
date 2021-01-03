@@ -20,7 +20,7 @@ func HandleLogin(loginRequest request.LoginRequest) (*response.LoginResponse, *u
 	if err != nil {
 		return nil, utility.NewUnAuthorizedError("User not found", nil)
 	}
-	if utility.ComparePasswords(user.Password, loginRequest.Password) == false {
+	if !utility.ComparePasswords(user.Password, loginRequest.Password) {
 		return nil, utility.NewUnAuthorizedError("Password not valid", nil)
 	}
 	tokenDetails, tokenError := utility.CreateToken(user, "*")
@@ -46,6 +46,9 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 		return nil, utility.NewUnAuthorizedError("Invalid at,rt pair", nil)
 	}
 	claims, err := utility.DecodeToken(token.RefreshToken, os.Getenv("REFRESH_SECRET"))
+	if err!=nil{
+		app.
+	}
 	sub := (*claims)["sub"]
 	userId, hexErr := primitive.ObjectIDFromHex(sub.(string))
 	if hexErr != nil {

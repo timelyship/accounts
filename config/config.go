@@ -12,11 +12,11 @@ import (
 func Init() {
 	defer syncLogger()
 	yamlFile, unMarshallError := ioutil.ReadFile("config.yaml")
-	logger.Info("Could not load config.yaml", zap.Error(unMarshallError))
+	Logger.Info("Could not load config.yaml", zap.Error(unMarshallError))
 	configMap := make(map[interface{}]interface{})
 	uError := yaml.Unmarshal(yamlFile, &configMap)
 	if uError != nil {
-		logger.Info("Could not Unmarshal config.yaml", zap.Error(uError))
+		Logger.Info("Could not Unmarshal config.yaml", zap.Error(uError))
 	}
 	flatten("", configMap)
 }
