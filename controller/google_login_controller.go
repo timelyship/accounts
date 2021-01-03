@@ -10,15 +10,15 @@ import (
 func LoginByGoogle(c *gin.Context) {
 	queryParams := c.Request.URL.Query()
 	uiState := queryParams["r"][0]
-	redirectUri, _ := service.GetGoogleRedirectUri(uiState)
-	c.JSON(http.StatusOK, redirectUri)
+	redirectURI, _ := service.GetGoogleRedirectUri(uiState)
+	c.JSON(http.StatusOK, redirectURI)
 	c.Abort()
 }
 
 func HandleRedirectFromGoogle(c *gin.Context) {
 	fmt.Println("Login redirect log...")
 	queryParams := c.Request.URL.Query()
-	redirectUri := service.HandleGoogleRedirect(queryParams)
-	c.Redirect(http.StatusTemporaryRedirect, redirectUri)
-	//c.Abort()
+	redirectURI := service.HandleGoogleRedirect(queryParams)
+	c.Redirect(http.StatusTemporaryRedirect, redirectURI)
+	// c.Abort()
 }
