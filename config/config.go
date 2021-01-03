@@ -31,10 +31,8 @@ func flatten(root string, configMap map[interface{}]interface{}) {
 		}
 		if reflect.ValueOf(v).Kind() == reflect.Map {
 			flatten(nextRoot, v.(map[interface{}]interface{}))
-		} else {
-			if os.Getenv(nextRoot) == "" {
-				os.Setenv(nextRoot, fmt.Sprintf("%v", v))
-			}
+		} else if os.Getenv(nextRoot) == "" {
+			os.Setenv(nextRoot, fmt.Sprintf("%v", v))
 		}
 	}
 }
