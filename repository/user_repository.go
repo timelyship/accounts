@@ -73,8 +73,8 @@ func GetUserByEmailOrPhone(emailOrPhone string) (*domain.User, *utility.RestErro
 
 func getVerifiedEmailFilter(emailOrPhone string) bson.D {
 	return bson.D{{Key: "$and", Value: bson.A{
-		bson.D{{"primary_email", emailOrPhone}},
-		bson.D{{"is_primary_email_verified", true}},
+		bson.D{{Key: "primary_email", Value: emailOrPhone}},
+		bson.D{{Key: "is_primary_email_verified", Value: true}},
 	}}}
 }
 
@@ -100,7 +100,7 @@ func SaveUser(user *domain.User) *utility.RestError {
 func UpdateUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"_id", user.ID}}
+	filter := bson.D{{Key: "_id", Value: user.ID}}
 	updateResult := GetCollection(UserCollection).FindOneAndReplace(ctx, filter, user)
 	error := updateResult.Err()
 	if error != nil {
@@ -116,10 +116,10 @@ func IsExistingEmail(email string) (bool, *utility.RestError) {
 	// https://stackoverflow.com/questions/51179588/how-to-sort-and-limit-results-in-mongodb/51181206
 	options := options.Find()
 	options.SetLimit(1)
-	filter := bson.D{{"$or", bson.A{
-		bson.D{{"primary_email", email}},
-		bson.D{{"google_auth_info.email", email}},
-		bson.D{{"facebook_auth_info.email", email}},
+	filter := bson.D{{Key: "$or", Value: bson.A{
+		bson.D{{Key: "primary_email", Value: email}},
+		bson.D{{Key: "google_auth_info.email", Value: email}},
+		bson.D{{Key: "facebook_auth_info.email", Value: email}},
 	}}}
 	count, error := GetCollection(UserCollection).CountDocuments(ctx, filter)
 	if error != nil {

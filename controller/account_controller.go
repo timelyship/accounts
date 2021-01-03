@@ -20,7 +20,7 @@ func SignUp(c *gin.Context) {
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
-		c.JSON(201, nil)
+		c.JSON(http.StatusCreated, nil)
 	}
 }
 

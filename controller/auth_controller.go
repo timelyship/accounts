@@ -47,7 +47,6 @@ func RefreshToken(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, loginResponse)
 	}
-
 }
 
 func GenerateCode(c *gin.Context) {
@@ -73,7 +72,7 @@ func ExchangeCode(c *gin.Context) {
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
-		c.JSON(200, map[string]string{
+		c.JSON(http.StatusOK, map[string]string{
 			"code": data.Code,
 		})
 	}
@@ -82,13 +81,13 @@ func ExchangeCode(c *gin.Context) {
 func Profile(c *gin.Context) {
 	token, ok := c.MustGet("token").(*jwt.Token)
 	if !ok {
-		c.JSON(401, "token not ok")
+		c.JSON(http.StatusUnauthorized, "token not ok")
 		return
 	}
 	claims, err := utility.GetProfileClaims(token)
 	if err != nil {
-		c.JSON(401, err)
+		c.JSON(http.StatusUnauthorized, err)
 		return
 	}
-	c.JSON(200, claims)
+	c.JSON(http.StatusOK, claims)
 }

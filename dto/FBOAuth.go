@@ -13,12 +13,12 @@ type FBOAuth struct {
 	state        string
 }
 
-func NewFBOAuth(responseType, clientID, scopes, redirectUri, state string) *FBOAuth {
+func NewFBOAuth(responseType, clientID, scopes, redirectURI, state string) *FBOAuth {
 	return &FBOAuth{
 		responseType: responseType,
 		clientID:     clientID,
 		scopes:       scopes,
-		redirectURI:  redirectUri,
+		redirectURI:  redirectURI,
 		state:        state,
 	}
 }
