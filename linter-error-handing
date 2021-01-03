@@ -1,0 +1,16 @@
+https://stackoverflow.com/questions/56206562/why-gofmt-d-gives-computing-diff-exec-diff-executable-file-not-found-in
+
+The gofmt tool assumes the system has an installed and available diff. Unfortunately, this tool is not part of a standard Windows installation so you need to add it manually.
+
+For most of us, the easiest way to add the path of the diff tool we already have on our computer. This is the one that has been installed as part of git. (If git hasn't been installed yet then do it at first.)
+
+In order to solve this, you should issue a command from the DOS prompt in which you want to execute gofmt:
+
+set PATH=%PATH%;c:\Program Files\Git\usr\bin
+(Maybe you need to change the path according to your git installation.)
+
+For a more permanent solution, you should add the path of diff.exe to the PATH environment variable via the Control Panel.
+
+
+
+after linter config 2 do this and reboot the machine, not sure why without reboot , intellij does not find the updated path.
