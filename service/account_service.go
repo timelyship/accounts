@@ -17,7 +17,7 @@ import (
 )
 
 func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
-	validationError := signUpRequest.ApplyUiValidation()
+	validationError := signUpRequest.ApplyUIValidation()
 	if validationError != nil {
 		return validationError
 	}

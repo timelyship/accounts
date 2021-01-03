@@ -15,31 +15,31 @@ type SignUpRequest struct {
 	Password  string `json:"password"`
 }
 
-func (r SignUpRequest) ApplyUiValidation() *utility.RestError {
+func (r SignUpRequest) ApplyUIValidation() *utility.RestError {
 	validationErrors := make([]error, 0)
 	/* ApplyUiValidation first name*/
 	if len(r.FirstName) == 0 {
 		validationErrors = append(validationErrors, errors.New("firstName should not be empty"))
 	}
 	if len(r.LastName) > application.IntConst.FirstNameMaxLen {
-		validationErrors = append(validationErrors, errors.New(
-			fmt.Sprintf("firstName should be within[0,%v] characters", application.IntConst.FirstNameMaxLen)))
+		validationErrors = append(validationErrors,
+			fmt.Errorf("firstName should be within[0,%v] characters", application.IntConst.FirstNameMaxLen))
 	}
 	/* ApplyUiValidation last name*/
 	if len(r.LastName) == 0 {
 		validationErrors = append(validationErrors, errors.New("lastName should not be empty"))
 	}
 	if len(r.LastName) > application.IntConst.LastNameMaxLen {
-		validationErrors = append(validationErrors, errors.New(
-			fmt.Sprintf("lastName should be within[0,%v] characters", application.IntConst.LastNameMaxLen)))
+		validationErrors = append(validationErrors,
+			fmt.Errorf("lastName should be within[0,%v] characters", application.IntConst.LastNameMaxLen))
 	}
 	/* ApplyUiValidation email*/
 	if len(r.Email) == 0 {
 		validationErrors = append(validationErrors, errors.New("email should not be empty"))
 	}
 	if len(r.Email) > application.IntConst.EmailNameMaxLen {
-		validationErrors = append(validationErrors, errors.New(
-			fmt.Sprintf("lastName should be within[0,%v] characters", application.IntConst.EmailNameMaxLen)))
+		validationErrors = append(validationErrors,
+			fmt.Errorf("lastName should be within[0,%v] characters", application.IntConst.EmailNameMaxLen))
 	}
 	emailRegex := regexp.MustCompile(application.StringConst.EmailPattern)
 	if !emailRegex.MatchString(r.Email) {
