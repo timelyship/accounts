@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
 	"timelyship.com/accounts/service"
@@ -20,7 +21,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
-		c.JSON(200, loginResponse)
+		c.JSON(http.StatusOK, loginResponse)
 	}
 }
 
@@ -29,7 +30,7 @@ func InitiateLogin(c *gin.Context) {
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
-		c.JSON(200, resp)
+		c.JSON(http.StatusOK, resp)
 	}
 }
 
@@ -44,7 +45,7 @@ func RefreshToken(c *gin.Context) {
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
-		c.JSON(200, loginResponse)
+		c.JSON(http.StatusOK, loginResponse)
 	}
 
 }
@@ -54,13 +55,13 @@ func GenerateCode(c *gin.Context) {
 	aud := c.Query("aud")
 	state := c.Query("state")
 	if !ok {
-		c.JSON(401, nil)
+		c.JSON(http.StatusUnauthorized, nil)
 	} else {
 		err := service.GenerateCode(token, aud, state)
 		if err != nil {
 			c.JSON(err.Status, err)
 		} else {
-			c.JSON(200, nil)
+			c.JSON(http.StatusOK, nil)
 		}
 	}
 
