@@ -79,7 +79,7 @@ linters:
     - gocritic
     - gocyclo
     - gofmt
-    - goimports
+#    - goimports
     - golint
     - gomnd
     - goprintffuncname
@@ -107,7 +107,7 @@ linters:
     - asciicheck
     - godot
     - nestif
-    - nlreturn
+#    - nlreturn
     - paralleltest
   # don't enable:
   # - gochecknoglobals

@@ -54,7 +54,7 @@ func sendEmailVerificationMail(user *domain.User) *utility.RestError {
 	secret := strings.Replace(uuid.New().String(), "-", "", -1)
 	vs := &domain.VerificationSecret{
 		BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-		Type:       application.StringConst.EMAIL,
+		Type:       application.StringConst.Email,
 		Subject:    user.PrimaryEmail,
 		Secret:     secret,
 		ValidUntil: time.Now().Add(time.Hour * 48),

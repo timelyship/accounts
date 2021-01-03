@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +13,23 @@ import (
 
 var (
 	router = gin.New()
+	logger = NewLogger()
 )
+
+func NewLogger() *zap.Logger {
+	config := zap.NewProductionConfig()
+	config.OutputPaths = []string{
+		os.Getenv("LOGGER_OUTPUT_PATH"),
+	}
+
+	config.EncoderConfig.LevelKey = "level"
+	config.EncoderConfig.TimeKey = "timestamp"
+	config.EncoderConfig.CallerKey = "caller"
+	config.EncoderConfig.MessageKey = "message"
+
+	l, _ := config.Build()
+	return l
+}
 
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -30,21 +47,24 @@ func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, "+
+			"X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
 
 		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
+			c.AbortWithStatus(http.StatusNoContent)
+
 			return
 		}
 		c.Next()
 	}
 }
 
-func isWhiteListed(uri string)bool  {
-	whiteListedUrls := []string{"/account/login","/account/sign-up","/initiate-login","/decode-code","/exchange-code","/logout","/verify-email"}
+func isWhiteListed(uri string) bool {
+	whiteListedUrls := []string{"/account/login", "/account/sign-up",
+		"/initiate-login", "/decode-code", "/exchange-code", "/logout", "/verify-email"}
 	for _, a := range whiteListedUrls {
-		if strings.HasPrefix(uri,a) {
+		if strings.HasPrefix(uri, a) {
 			return true
 		}
 	}
@@ -54,20 +74,20 @@ func isWhiteListed(uri string)bool  {
 func AuthenticationMiddleWare() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
-		if isWhiteListed(c.Request.RequestURI){
+		if isWhiteListed(c.Request.RequestURI) {
 			c.Next()
 			return
 		}
-		const BEARER_SCHEMA = "Bearer "
+		const BearerSchema = "Bearer "
 		authHeader := c.GetHeader("Authorization")
-		if !strings.Contains(authHeader, BEARER_SCHEMA) {
+		if !strings.Contains(authHeader, BearerSchema) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		tokenString := authHeader[len(BEARER_SCHEMA):]
+		tokenString := authHeader[len(BearerSchema):]
 		token, err := utility.ValidateToken(tokenString, os.Getenv("ACCESS_SECRET"))
 		if err == nil && token.Valid {
-			c.Set("token",token)
+			c.Set("token", token)
 			c.Next()
 		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -80,5 +100,8 @@ func Start() {
 	router.Use(CORSMiddleware())
 	router.Use(AuthenticationMiddleWare())
 	mapUrls()
-	router.Run(":8080")
+	err := router.Run(":8080")
+	if err != nil {
+		logger.Error("Error starting app", zap.Error(err))
+	}
 }
