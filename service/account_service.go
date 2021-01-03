@@ -54,7 +54,7 @@ func sendEmailVerificationMail(user *domain.User) *utility.RestError {
 	secret := strings.Replace(uuid.New().String(), "-", "", -1)
 	vs := &domain.VerificationSecret{
 		BaseEntity: domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-		Type:       application.STRING_CONST.EMAIL,
+		Type:       application.StringConst.EMAIL,
 		Subject:    user.PrimaryEmail,
 		Secret:     secret,
 		ValidUntil: time.Now().Add(time.Hour * 48),
@@ -64,7 +64,7 @@ func sendEmailVerificationMail(user *domain.User) *utility.RestError {
 		return err
 	}
 	msgPayload := dto.NewEmailVerificationMsgPayload(
-		application.STRING_CONST.VERIFY_EMAIL, []string{user.PrimaryEmail}, []string{}, []string{"najim.ju@gmail.com"}, map[string]interface{}{
+		application.StringConst.VerifyEmail, []string{user.PrimaryEmail}, []string{}, []string{"najim.ju@gmail.com"}, map[string]interface{}{
 			"fullName":       fmt.Sprintf("%v %v", user.FirstName, user.LastName),
 			"verificationId": secret,
 		},

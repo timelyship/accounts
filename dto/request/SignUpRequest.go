@@ -21,31 +21,31 @@ func (r SignUpRequest) ApplyUiValidation() *utility.RestError {
 	if len(r.FirstName) == 0 {
 		validationErrors = append(validationErrors, errors.New("firstName should not be empty"))
 	}
-	if len(r.LastName) > application.INT_CONST.FIRST_NAME_MAX_LEN {
+	if len(r.LastName) > application.IntConst.FirstNameMaxLen {
 		validationErrors = append(validationErrors, errors.New(
-			fmt.Sprintf("firstName should be within[0,%v] characters", application.INT_CONST.FIRST_NAME_MAX_LEN)))
+			fmt.Sprintf("firstName should be within[0,%v] characters", application.IntConst.FirstNameMaxLen)))
 	}
 	/* ApplyUiValidation last name*/
 	if len(r.LastName) == 0 {
 		validationErrors = append(validationErrors, errors.New("lastName should not be empty"))
 	}
-	if len(r.LastName) > application.INT_CONST.LAST_NAME_MAX_LEN {
+	if len(r.LastName) > application.IntConst.LastNameMaxLen {
 		validationErrors = append(validationErrors, errors.New(
-			fmt.Sprintf("lastName should be within[0,%v] characters", application.INT_CONST.LAST_NAME_MAX_LEN)))
+			fmt.Sprintf("lastName should be within[0,%v] characters", application.IntConst.LastNameMaxLen)))
 	}
 	/* ApplyUiValidation email*/
 	if len(r.Email) == 0 {
 		validationErrors = append(validationErrors, errors.New("email should not be empty"))
 	}
-	if len(r.Email) > application.INT_CONST.EMAIL_NAME_MAX_LEN {
+	if len(r.Email) > application.IntConst.EmailNameMaxLen {
 		validationErrors = append(validationErrors, errors.New(
-			fmt.Sprintf("lastName should be within[0,%v] characters", application.INT_CONST.EMAIL_NAME_MAX_LEN)))
+			fmt.Sprintf("lastName should be within[0,%v] characters", application.IntConst.EmailNameMaxLen)))
 	}
-	emailRegex := regexp.MustCompile(application.STRING_CONST.EMAIL_PATTERN)
+	emailRegex := regexp.MustCompile(application.StringConst.EmailPattern)
 	if !emailRegex.MatchString(r.Email) {
 		validationErrors = append(validationErrors, errors.New("email pattern invalid,contact administrator"))
 	}
-	passwordRegex := regexp.MustCompile(application.STRING_CONST.PASSWORD_PATTERN)
+	passwordRegex := regexp.MustCompile(application.StringConst.PasswordPattern)
 	if !passwordRegex.MatchString(r.Password) {
 		validationErrors = append(validationErrors, errors.New("password verification failed!Rules are - "+
 			"minimum 8 length(characters between lowercase,uppercase and number,no special character)"))

@@ -43,11 +43,11 @@ type User struct {
 	PrimaryEmail           string           `bson:"primary_email"`
 	IsPrimaryEmailVerified bool             `bson:"is_primary_email_verified"`
 	PrimaryPicture         string           `bson:"primary_picture"`
-	PhoneNumbers           []*PhoneNumber    `bson:"phone_numbers"`
+	PhoneNumbers           []*PhoneNumber   `bson:"phone_numbers"`
 	DateCreated            time.Time        `bson:"date_created"`
 	DateUpdated            time.Time        `bson:"date_updated"`
 	GoogleAuthInfo         GoogleAuthInfo   `bson:"google_auth_info"`
 	FacebookAuthInfo       FacebookAuthInfo `bson:"facebook_auth_info"`
 	Password               string           `bson:"password"`
-	Roles                  []*Role           `bson:"roles"`
+	Roles                  []*Role          `bson:"roles"`
 }
