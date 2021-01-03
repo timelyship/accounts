@@ -10,15 +10,15 @@ import (
 func LoginByFB(c *gin.Context) {
 	queryParams := c.Request.URL.Query()
 	uiState := queryParams["r"][0]
-	redirectUri, _ := service.GetFBRedirectUri(uiState)
-	c.JSON(http.StatusOK, redirectUri)
+	redirectURI, _ := service.GetFBRedirectUri(uiState)
+	c.JSON(http.StatusOK, redirectURI)
 	c.Abort()
 }
 
 func HandleRedirectFromDB(c *gin.Context) {
 	fmt.Println("Login redirect log...")
 	queryParams := c.Request.URL.Query()
-	redirectUri := service.HandleFbRedirect(queryParams)
-	c.Redirect(http.StatusTemporaryRedirect, redirectUri)
-	//c.Abort()
+	redirectURI := service.HandleFbRedirect(queryParams)
+	c.Redirect(http.StatusTemporaryRedirect, redirectURI)
+	// c.Abort()
 }
