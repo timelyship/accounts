@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/service"
 	"timelyship.com/accounts/utility"
@@ -29,7 +30,7 @@ func VerifyEmail(c *gin.Context) {
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
-		c.JSON(200, nil)
+		c.JSON(http.StatusOK, nil)
 	}
 }
 
@@ -47,6 +48,6 @@ func ResetPassword() {
 
 }
 
-func Logout(c * gin.Context)  {
-	c.JSON(200,nil)
+func Logout(c *gin.Context) {
+	c.JSON(http.StatusOK, nil)
 }
