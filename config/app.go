@@ -95,7 +95,12 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 	}
 }
 
+func syncLogger() {
+	_ = logger.Sync()
+}
+
 func Start() {
+	defer syncLogger()
 	router.Use(Logger())
 	router.Use(CORSMiddleware())
 	router.Use(AuthenticationMiddleWare())
