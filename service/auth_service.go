@@ -6,8 +6,10 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 	"os"
 	"strings"
+	"timelyship.com/accounts/config"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
@@ -46,15 +48,15 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 		return nil, utility.NewUnAuthorizedError("Invalid at,rt pair", nil)
 	}
 	claims, err := utility.DecodeToken(token.RefreshToken, os.Getenv("REFRESH_SECRET"))
-	if err!=nil{
-		app.
+	if err != nil {
+		config.Logger.Info("Todo", zap.Error(err.Error))
 	}
 	sub := (*claims)["sub"]
-	userId, hexErr := primitive.ObjectIDFromHex(sub.(string))
+	userID, hexErr := primitive.ObjectIDFromHex(sub.(string))
 	if hexErr != nil {
 		return nil, utility.NewUnAuthorizedError("Invalid subject", &hexErr)
 	}
-	user, userErr := repository.GetUserByID(userId)
+	user, userErr := repository.GetUserByID(userID)
 	if userErr != nil {
 		return nil, utility.NewUnAuthorizedError("User not found for subject", &userErr.Error)
 	}
@@ -88,11 +90,11 @@ func GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
 	if curAud != "*" {
 		return utility.NewUnAuthorizedError("Insufficient privilege", nil)
 	}
-	userId, hErr := primitive.ObjectIDFromHex(claims["sub"].(string))
+	userID, hErr := primitive.ObjectIDFromHex(claims["sub"].(string))
 	if hErr != nil {
 		return utility.NewUnAuthorizedError("Internal error", &hErr)
 	}
-	user, uError := repository.GetUserByID(userId)
+	user, uError := repository.GetUserByID(userID)
 	if uError != nil {
 		return utility.NewUnAuthorizedError("User could be fetched", &uError.Error)
 	}
@@ -126,7 +128,7 @@ func GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
 }
 
 func InitiateLogin() (*map[string]string, *utility.RestError) {
-	state1 := strings.Replace(uuid.New().String(), "-", "", -1)
+	state1 := strings.ReplaceAll(uuid.New().String(), "-", "")
 	state2 := strings.Replace(uuid.New().String(), "-", "", -1)
 	state3 := strings.Replace(uuid.New().String(), "-", "", -1)
 	state4 := strings.Replace(uuid.New().String(), "-", "", -1)

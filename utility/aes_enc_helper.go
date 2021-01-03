@@ -1,15 +1,12 @@
 package utility
 
 import (
-	"bytes"
-	"compress/gzip"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
 	"github.com/mergermarket/go-pkcs7"
 	"io"
-	"log"
 )
 
 func SimpleAESEncrypt(key []byte, unencrypted string) (string, *RestError) {
@@ -40,15 +37,4 @@ func SimpleAESEncrypt(key []byte, unencrypted string) (string, *RestError) {
 
 	data := fmt.Sprintf("%x", cipherText)
 	return data, nil
-}
-func zip(data string) string {
-	var b bytes.Buffer
-	gz := gzip.NewWriter(&b)
-	if _, err := gz.Write([]byte(data)); err != nil {
-		log.Fatal(err)
-	}
-	if err := gz.Close(); err != nil {
-		log.Fatal(err)
-	}
-	return string(b.Bytes())
 }

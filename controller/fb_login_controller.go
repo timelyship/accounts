@@ -10,7 +10,7 @@ import (
 func LoginByFB(c *gin.Context) {
 	queryParams := c.Request.URL.Query()
 	uiState := queryParams["r"][0]
-	redirectURI, _ := service.GetFBRedirectUri(uiState)
+	redirectURI, _ := service.GetFBRedirectURI(uiState)
 	c.JSON(http.StatusOK, redirectURI)
 	c.Abort()
 }

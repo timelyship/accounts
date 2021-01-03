@@ -14,9 +14,9 @@ import (
 	"timelyship.com/accounts/repository"
 )
 
-func GetFBRedirectUri(uiState string) (string, error) {
-	state, eUuid := uuid.NewRandom()
-	if eUuid == nil {
+func GetFBRedirectURI(uiState string) (string, error) {
+	state, eUUID := uuid.NewRandom()
+	if eUUID == nil {
 		fmt.Println(uiState)
 		fAuth := dto.NewFBOAuth("token",
 			os.Getenv("FB_OAUTH_CLIENT_ID"),
@@ -25,14 +25,14 @@ func GetFBRedirectUri(uiState string) (string, error) {
 			fmt.Sprintf("security_token=%v&ui_state=%v", state, uiState),
 		)
 		fbState := domain.FBState{
-			BaseEntity: domain.BaseEntity{ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-			State:      fAuth.GetState(),
+			BaseEntity: domain.BaseEntity{
+				ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+			State: fAuth.GetState(),
 		}
 		repository.SaveFBState(&fbState)
 		return fAuth.BuildURI(), nil
-	} else {
-		fmt.Println("UUID failed")
 	}
+	fmt.Println("UUID failed")
 	return "", nil
 }
 
@@ -90,9 +90,9 @@ func HandleFbRedirect(values url.Values) string {
 }
 
 func exchangeTokenWithFb(code string) map[string]interface{} {
-	accessTokenUrl := fmt.Sprintf("https://graph.facebook.com/v8.0/oauth/access_token?client_id=%s&redirect_uri=%s&client_secret=%s&code=%s",
+	accessTokenURL := fmt.Sprintf("https://graph.facebook.com/v8.0/oauth/access_token?client_id=%s&redirect_uri=%s&client_secret=%s&code=%s",
 		os.Getenv("FB_OAUTH_CLIENT_ID"), os.Getenv("FB_OAUTH_REDIRECT_URI"), os.Getenv("FB_OAUTH_CLIENT_SECRET"), code)
-	resp, err := http.Get(accessTokenUrl)
+	resp, err := http.Get(accessTokenURL)
 
 	if err != nil {
 		panic(err)
