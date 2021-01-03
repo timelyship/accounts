@@ -51,7 +51,7 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 	if hexErr != nil {
 		return nil, utility.NewUnAuthorizedError("Invalid subject", &hexErr)
 	}
-	user, userErr := repository.GetUserById(userId)
+	user, userErr := repository.GetUserByID(userId)
 	if userErr != nil {
 		return nil, utility.NewUnAuthorizedError("User not found for subject", &userErr.Error)
 	}
@@ -89,7 +89,7 @@ func GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
 	if hErr != nil {
 		return utility.NewUnAuthorizedError("Internal error", &hErr)
 	}
-	user, uError := repository.GetUserById(userId)
+	user, uError := repository.GetUserByID(userId)
 	if uError != nil {
 		return utility.NewUnAuthorizedError("User could be fetched", &uError.Error)
 	}

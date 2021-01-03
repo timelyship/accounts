@@ -8,12 +8,13 @@ import (
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/utility"
 )
-const LOGIN_SECRET_COLLECTION = "login_secret"
+
+const LoginSecretCollection = "login_secret"
 
 func SaveLoginState(loginState *domain.LoginState) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	insertResult, error := GetCollection(LOGIN_SECRET_COLLECTION).InsertOne(ctx, loginState)
+	insertResult, error := GetCollection(LoginSecretCollection).InsertOne(ctx, loginState)
 	fmt.Printf("%v\n", insertResult)
 	if error != nil {
 		fmt.Println("db-error:", error)
@@ -24,8 +25,8 @@ func SaveLoginState(loginState *domain.LoginState) *utility.RestError {
 func UpdateLoginState(loginState *domain.LoginState) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"state", loginState.State}}
-	updateResult := GetCollection(LOGIN_SECRET_COLLECTION).FindOneAndReplace(ctx, filter, loginState)
+	filter := bson.D{{Key: "state", Value: loginState.State}}
+	updateResult := GetCollection(LoginSecretCollection).FindOneAndReplace(ctx, filter, loginState)
 	error := updateResult.Err()
 	if error != nil {
 		fmt.Println("db-error:", error)
@@ -33,12 +34,12 @@ func UpdateLoginState(loginState *domain.LoginState) *utility.RestError {
 	}
 	return nil
 }
-func GetLoginState(state string) (*domain.LoginState,*utility.RestError) {
+func GetLoginState(state string) (*domain.LoginState, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"state", state}}
+	filter := bson.D{{Key: "state", Value: state}}
 	result := domain.LoginState{}
-	error := GetCollection(LOGIN_SECRET_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	error := GetCollection(LoginSecretCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return nil, utility.NewInternalServerError("Could not query.", &error)

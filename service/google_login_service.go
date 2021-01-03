@@ -53,7 +53,7 @@ func HandleGoogleRedirect(values url.Values) string {
 			userMap := exchangeCode(code)
 			googleId := userMap["sub"]
 			fmt.Println(googleId)
-			existingUser, _ := repository.GetUserByGoogleId(fmt.Sprintf("%v", googleId))
+			existingUser, _ := repository.GetUserByGoogleID(fmt.Sprintf("%v", googleId))
 			if existingUser == nil {
 				//create new user
 				existingUser = &domain.User{

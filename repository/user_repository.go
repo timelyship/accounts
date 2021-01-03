@@ -11,14 +11,14 @@ import (
 	"timelyship.com/accounts/utility"
 )
 
-const USER_COLLECTION = "user"
+const UserCollection = "user"
 
-func GetUserByGoogleId(googleId string) (*domain.User, *utility.RestError) {
+func GetUserByGoogleID(googleId string) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"google_auth_info.id", googleId}}
+	filter := bson.D{{Key: "google_auth_info.id", Value: googleId}}
 	result := domain.User{}
-	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	error := GetCollection(UserCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return nil, utility.NewInternalServerError("Could not insert to database. Try after some time.", &error)
@@ -29,13 +29,13 @@ func GetUserByGoogleId(googleId string) (*domain.User, *utility.RestError) {
 func GetUserByEmail(email string) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"$or", bson.A{
-		bson.D{{"primary_email", email}},
-		bson.D{{"google_auth_info.email", email}},
-		bson.D{{"facebook_auth_info.email", email}},
+	filter := bson.D{{Key: "$or", Value: bson.A{
+		bson.D{{Key: "primary_email", Value: email}},
+		bson.D{{Key: "google_auth_info.email", Value: email}},
+		bson.D{{Key: "facebook_auth_info.email", Value: email}},
 	}}}
 	result := domain.User{}
-	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	error := GetCollection(UserCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return nil, utility.NewInternalServerError("Could not query.", &error)
@@ -43,12 +43,12 @@ func GetUserByEmail(email string) (*domain.User, *utility.RestError) {
 	return &result, nil
 }
 
-func GetUserById(id primitive.ObjectID) (*domain.User, *utility.RestError) {
+func GetUserByID(id primitive.ObjectID) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"_id", id}}
+	filter := bson.D{{Key: "_id", Value: id}}
 	result := domain.User{}
-	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	error := GetCollection(UserCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return nil, utility.NewInternalServerError("Could not query.", &error)
@@ -61,9 +61,9 @@ func GetUserByEmailOrPhone(emailOrPhone string) (*domain.User, *utility.RestErro
 	defer cancel()
 	verifiedEmailFilter := getVerifiedEmailFilter(emailOrPhone)
 	verifiedPhoneFilter := getVerifiedPhoneFilter(emailOrPhone)
-	filter := bson.D{{"$or", bson.A{verifiedEmailFilter, verifiedPhoneFilter}}}
+	filter := bson.D{{Key: "$or", Value: bson.A{verifiedEmailFilter, verifiedPhoneFilter}}}
 	result := domain.User{}
-	error := GetCollection(USER_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	error := GetCollection(UserCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return nil, utility.NewInternalServerError("Could not query.", &error)
@@ -72,23 +72,23 @@ func GetUserByEmailOrPhone(emailOrPhone string) (*domain.User, *utility.RestErro
 }
 
 func getVerifiedEmailFilter(emailOrPhone string) bson.D {
-	return bson.D{{"$and", bson.A{
+	return bson.D{{Key: "$and", Value: bson.A{
 		bson.D{{"primary_email", emailOrPhone}},
 		bson.D{{"is_primary_email_verified", true}},
 	}}}
 }
 
 func getVerifiedPhoneFilter(emailOrPhone string) bson.D {
-	return bson.D{{"$and", bson.A{
-		bson.D{{"phone_numbers.number", emailOrPhone}},
-		bson.D{{"phone_numbers.is_verified", true}},
+	return bson.D{{Key: "$and", Value: bson.A{
+		bson.D{{Key: "phone_numbers.number", Value: emailOrPhone}},
+		bson.D{{Key: "phone_numbers.is_verified", Value: true}},
 	}}}
 }
 
 func SaveUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	insertResult, error := GetCollection(USER_COLLECTION).InsertOne(ctx, user)
+	insertResult, error := GetCollection(UserCollection).InsertOne(ctx, user)
 	fmt.Printf("%v\n", insertResult)
 	if error != nil {
 		fmt.Println("db-error:", error)
@@ -101,7 +101,7 @@ func UpdateUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"_id", user.ID}}
-	updateResult := GetCollection(USER_COLLECTION).FindOneAndReplace(ctx, filter, user)
+	updateResult := GetCollection(UserCollection).FindOneAndReplace(ctx, filter, user)
 	error := updateResult.Err()
 	if error != nil {
 		fmt.Println("db-error:", error)
@@ -121,7 +121,7 @@ func IsExistingEmail(email string) (bool, *utility.RestError) {
 		bson.D{{"google_auth_info.email", email}},
 		bson.D{{"facebook_auth_info.email", email}},
 	}}}
-	count, error := GetCollection(USER_COLLECTION).CountDocuments(ctx, filter)
+	count, error := GetCollection(UserCollection).CountDocuments(ctx, filter)
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return false, utility.NewInternalServerError("Could not query.", &error)

@@ -9,14 +9,14 @@ import (
 	"timelyship.com/accounts/utility"
 )
 
-const TOKEN_COLLECTION = "token"
+const TokenCollection = "token"
 
 func GetTokenByRefreshToken(refreshToken string) (*domain.TokenDetails, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"refresh_token", refreshToken}}
+	filter := bson.D{{Key: "refresh_token", Value: refreshToken}}
 	result := domain.TokenDetails{}
-	error := GetCollection(TOKEN_COLLECTION).FindOne(ctx, filter).Decode(&result)
+	error := GetCollection(TokenCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return nil, utility.NewInternalServerError("Could not find.", &error)
@@ -27,8 +27,8 @@ func GetTokenByRefreshToken(refreshToken string) (*domain.TokenDetails, *utility
 func UpdateToken(token *domain.TokenDetails) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"_id", token.ID}}
-	updateResult := GetCollection(TOKEN_COLLECTION).FindOneAndReplace(ctx, filter, token)
+	filter := bson.D{{Key: "_id", Value: token.ID}}
+	updateResult := GetCollection(TokenCollection).FindOneAndReplace(ctx, filter, token)
 	error := updateResult.Err()
 	if error != nil {
 		fmt.Println("db-error:", error)
@@ -40,7 +40,7 @@ func UpdateToken(token *domain.TokenDetails) *utility.RestError {
 func SaveToken(token *domain.TokenDetails) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	insertResult, error := GetCollection(TOKEN_COLLECTION).InsertOne(ctx, token)
+	insertResult, error := GetCollection(TokenCollection).InsertOne(ctx, token)
 	fmt.Printf("%v\n", insertResult)
 	if error != nil {
 		fmt.Println("db-error:", error)
