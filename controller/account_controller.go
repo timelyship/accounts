@@ -8,7 +8,6 @@ import (
 	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/appwiring"
 	"timelyship.com/accounts/dto/request"
-	"timelyship.com/accounts/service"
 	"timelyship.com/accounts/utility"
 )
 
@@ -31,8 +30,10 @@ func SignUp(c *gin.Context) {
 }
 
 func VerifyEmail(c *gin.Context) {
+	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
+	accountService := appwiring.InitAccountService(logger)
 	verificationToken := c.Param("verificationToken")
-	err := service.VerifyEmail(verificationToken)
+	err := accountService.VerifyEmail(verificationToken)
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
