@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
-	"timelyship.com/accounts/config"
+	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/service"
 	"timelyship.com/accounts/utility"
@@ -18,7 +18,7 @@ func SignUp(c *gin.Context) {
 		c.JSON(restErr.Status, restErr)
 		return
 	}
-	config.Logger.Debug("signUpRequest debug log", zap.Any("signUpRequest = ", fmt.Sprintf("%v", signUpRequest)))
+	application.Logger.Debug("signUpRequest debug log", zap.Any("signUpRequest = ", fmt.Sprintf("%v", signUpRequest)))
 	err := service.InitiateSignUp(signUpRequest)
 	if err != nil {
 		c.JSON(err.Status, err)

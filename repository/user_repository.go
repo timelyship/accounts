@@ -13,10 +13,10 @@ import (
 
 const UserCollection = "user"
 
-func GetUserByGoogleID(googleId string) (*domain.User, *utility.RestError) {
+func GetUserByGoogleID(googleID string) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{Key: "google_auth_info.id", Value: googleId}}
+	filter := bson.D{{Key: "google_auth_info.id", Value: googleID}}
 	result := domain.User{}
 	error := GetCollection(UserCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {

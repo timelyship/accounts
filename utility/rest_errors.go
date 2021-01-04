@@ -51,7 +51,7 @@ func NewForbiddenError(message string, err *error) *RestError {
 	}
 }
 
-/*private methods*/
+/* private methods */
 func maskedError(e *error, s string) error {
 	// applies mask if log level is info
 	if e == nil || os.Getenv("LOG_LEVEL") == application.StringConst.LogLevelInfo {

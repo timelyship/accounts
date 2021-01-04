@@ -7,16 +7,17 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"timelyship.com/accounts/application"
 )
 
 func Init() {
-	defer syncLogger()
+	defer application.SyncLogger()
 	yamlFile, unMarshallError := ioutil.ReadFile("config.yaml")
-	Logger.Info("Could not load config.yaml", zap.Error(unMarshallError))
+	application.Logger.Info("Could not load config.yaml", zap.Error(unMarshallError))
 	configMap := make(map[interface{}]interface{})
 	uError := yaml.Unmarshal(yamlFile, &configMap)
 	if uError != nil {
-		Logger.Info("Could not Unmarshal config.yaml", zap.Error(uError))
+		application.Logger.Info("Could not Unmarshal config.yaml", zap.Error(uError))
 	}
 	flatten("", configMap)
 }

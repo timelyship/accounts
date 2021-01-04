@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 	"timelyship.com/accounts/application"
-	"timelyship.com/accounts/config"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/dto"
 	"timelyship.com/accounts/dto/request"
@@ -21,12 +20,12 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 
 	validationError := signUpRequest.ApplyUIValidation()
 	if validationError != nil {
-		config.Logger.Error("Sign up request validation error", zap.Any("validation error", validationError))
+		application.Logger.Error("Sign up request validation error", zap.Any("validation error", validationError))
 		return validationError
 	}
 	// check if an user exists with the email
 	if isExistingEmail, error := repository.IsExistingEmail(signUpRequest.Email); error != nil {
-		config.Logger.Error("isExistingEmail", zap.Any("isExistingEmail error", error))
+		application.Logger.Error("isExistingEmail", zap.Any("isExistingEmail error", error))
 		return error
 	} else if isExistingEmail {
 		bizError := fmt.Errorf("an user already exists with email %s", signUpRequest.Email)

@@ -8,28 +8,13 @@ import (
 	"os"
 	"strings"
 	"time"
+	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/utility"
 )
 
 var (
 	router = gin.New()
-	Logger = NewLogger()
 )
-
-func NewLogger() *zap.Logger {
-	config := zap.NewProductionConfig()
-	config.OutputPaths = []string{
-		os.Getenv("LOGGER_OUTPUT_PATH"),
-	}
-
-	config.EncoderConfig.LevelKey = "level"
-	config.EncoderConfig.TimeKey = "timestamp"
-	config.EncoderConfig.CallerKey = "caller"
-	config.EncoderConfig.MessageKey = "message"
-
-	l, _ := config.Build()
-	return l
-}
 
 func LogInterceptor() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -94,18 +79,14 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 	}
 }
 
-func syncLogger() {
-	_ = Logger.Sync()
-}
-
 func Start() {
-	defer syncLogger()
+	defer application.SyncLogger()
 	router.Use(LogInterceptor())
 	router.Use(CORSMiddleware())
 	router.Use(AuthenticationMiddleWare())
 	mapUrls()
 	err := router.Run(":8080")
 	if err != nil {
-		Logger.Error("Error starting app", zap.Error(err))
+		application.Logger.Error("Error starting app", zap.Error(err))
 	}
 }

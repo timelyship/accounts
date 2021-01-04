@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 	"os"
 	"strings"
-	"timelyship.com/accounts/config"
+	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
@@ -49,7 +49,7 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 	}
 	claims, err := utility.DecodeToken(token.RefreshToken, os.Getenv("REFRESH_SECRET"))
 	if err != nil {
-		config.Logger.Info("Todo", zap.Error(err.Error))
+		application.Logger.Info("Todo", zap.Error(err.Error))
 	}
 	sub := (*claims)["sub"]
 	userID, hexErr := primitive.ObjectIDFromHex(sub.(string))
