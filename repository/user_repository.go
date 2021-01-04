@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/utility"
@@ -22,23 +21,6 @@ func GetUserByGoogleID(googleID string) (*domain.User, *utility.RestError) {
 	if error != nil {
 		fmt.Println("db-error:", error)
 		return nil, utility.NewInternalServerError("Could not insert to database. Try after some time.", &error)
-	}
-	return &result, nil
-}
-
-func GetUserByEmail(email string) (*domain.User, *utility.RestError) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	filter := bson.D{{Key: "$or", Value: bson.A{
-		bson.D{{Key: "primary_email", Value: email}},
-		bson.D{{Key: "google_auth_info.email", Value: email}},
-		bson.D{{Key: "facebook_auth_info.email", Value: email}},
-	}}}
-	result := domain.User{}
-	error := GetCollection(UserCollection).FindOne(ctx, filter).Decode(&result)
-	if error != nil {
-		fmt.Println("db-error:", error)
-		return nil, utility.NewInternalServerError("Could not query.", &error)
 	}
 	return &result, nil
 }
@@ -83,48 +65,4 @@ func getVerifiedPhoneFilter(emailOrPhone string) bson.D {
 		bson.D{{Key: "phone_numbers.number", Value: emailOrPhone}},
 		bson.D{{Key: "phone_numbers.is_verified", Value: true}},
 	}}}
-}
-
-func SaveUser(user *domain.User) *utility.RestError {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	insertResult, error := GetCollection(UserCollection).InsertOne(ctx, user)
-	fmt.Printf("%v\n", insertResult)
-	if error != nil {
-		fmt.Println("db-error:", error)
-		return utility.NewInternalServerError("Could not insert to database. Try after some time.", &error)
-	}
-	return nil
-}
-
-func UpdateUser(user *domain.User) *utility.RestError {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	filter := bson.D{{Key: "_id", Value: user.ID}}
-	updateResult := GetCollection(UserCollection).FindOneAndReplace(ctx, filter, user)
-	error := updateResult.Err()
-	if error != nil {
-		fmt.Println("db-error:", error)
-		return utility.NewInternalServerError("Could not replace to database. Try after some time.", &error)
-	}
-	return nil
-}
-
-func IsExistingEmail(email string) (bool, *utility.RestError) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	// https://stackoverflow.com/questions/51179588/how-to-sort-and-limit-results-in-mongodb/51181206
-	options := options.Find()
-	options.SetLimit(1)
-	filter := bson.D{{Key: "$or", Value: bson.A{
-		bson.D{{Key: "primary_email", Value: email}},
-		bson.D{{Key: "google_auth_info.email", Value: email}},
-		bson.D{{Key: "facebook_auth_info.email", Value: email}},
-	}}}
-	count, error := GetCollection(UserCollection).CountDocuments(ctx, filter)
-	if error != nil {
-		fmt.Println("db-error:", error)
-		return false, utility.NewInternalServerError("Could not query.", &error)
-	}
-	return count > 0, nil
 }
