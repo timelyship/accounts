@@ -28,7 +28,7 @@ func ProvideAuthService(a repository.AuthRepository, l zap.Logger) AuthService {
 	}
 }
 
-func HandleLogin(loginRequest request.LoginRequest) (*response.LoginResponse, *utility.RestError) {
+func (s AuthService) HandleLogin(loginRequest request.LoginRequest) (*response.LoginResponse, *utility.RestError) {
 	user, err := repository.GetUserByEmailOrPhone(loginRequest.EmailOrPhone)
 	if err != nil {
 		return nil, utility.NewUnAuthorizedError("User not found", nil)
@@ -50,7 +50,28 @@ func HandleLogin(loginRequest request.LoginRequest) (*response.LoginResponse, *u
 	}, nil
 }
 
-func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *utility.RestError) {
+func (s AuthService) InitiateLogin() (*map[string]string, *utility.RestError) {
+	state1 := strings.ReplaceAll(uuid.New().String(), "-", "")
+	state2 := strings.ReplaceAll(uuid.New().String(), "-", "")
+	state3 := strings.ReplaceAll(uuid.New().String(), "-", "")
+	state4 := strings.ReplaceAll(uuid.New().String(), "-", "")
+	state := state1 + state2 + state3 + state4
+	key := strings.ReplaceAll(uuid.New().String(), "-", "")
+	loginState := &domain.LoginState{
+		State: state,
+		Key:   key,
+	}
+	err := repository.SaveLoginState(loginState)
+	if err != nil {
+		return nil, err
+	}
+	return &map[string]string{
+		"state": state,
+		"key":   key,
+	}, nil
+}
+
+func (s AuthService) RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *utility.RestError) {
 	token, err := repository.GetTokenByRefreshToken(refreshToken)
 	if err != nil {
 		return nil, utility.NewUnAuthorizedError("Token persistence failed", &err.Error)
@@ -88,7 +109,7 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 	}, nil
 }
 
-func GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
+func (s AuthService) GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
 	loginState, encKErr := repository.GetLoginState(state)
 	if encKErr != nil || loginState.Key == "" {
 		return utility.NewUnAuthorizedError("Invalid state", &encKErr.Error)
@@ -138,28 +159,7 @@ func GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
 	return nil
 }
 
-func InitiateLogin() (*map[string]string, *utility.RestError) {
-	state1 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state2 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state3 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state4 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state := state1 + state2 + state3 + state4
-	key := strings.ReplaceAll(uuid.New().String(), "-", "")
-	loginState := &domain.LoginState{
-		State: state,
-		Key:   key,
-	}
-	err := repository.SaveLoginState(loginState)
-	if err != nil {
-		return nil, err
-	}
-	return &map[string]string{
-		"state": state,
-		"key":   key,
-	}, nil
-}
-
-func ExchangeCode(state string) (*domain.LoginState, *utility.RestError) {
+func (s AuthService) ExchangeCode(state string) (*domain.LoginState, *utility.RestError) {
 	data, err := repository.GetLoginState(state)
 	if err != nil {
 		return nil, utility.NewUnAuthorizedError("Invalid state", &err.Error)

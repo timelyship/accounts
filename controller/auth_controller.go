@@ -4,20 +4,24 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"timelyship.com/accounts/application"
+	"timelyship.com/accounts/appwiring"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
-	"timelyship.com/accounts/service"
 	"timelyship.com/accounts/utility"
 )
 
 func Login(c *gin.Context) {
+	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
+	authService := appwiring.InitAuthService(logger)
 	var loginRequest request.LoginRequest
 	if jsonBindingError := c.ShouldBindJSON(&loginRequest); jsonBindingError != nil {
+		logger.Error("Json bind error, login")
 		restErr := utility.NewBadRequestError("Invalid JSON body", &jsonBindingError)
 		c.JSON(restErr.Status, restErr)
 		return
 	}
-	loginResponse, err := service.HandleLogin(loginRequest)
+	loginResponse, err := authService.HandleLogin(loginRequest)
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
@@ -26,7 +30,9 @@ func Login(c *gin.Context) {
 }
 
 func InitiateLogin(c *gin.Context) {
-	resp, err := service.InitiateLogin()
+	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
+	authService := appwiring.InitAuthService(logger)
+	resp, err := authService.InitiateLogin()
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
@@ -35,13 +41,15 @@ func InitiateLogin(c *gin.Context) {
 }
 
 func RefreshToken(c *gin.Context) {
+	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
+	authService := appwiring.InitAuthService(logger)
 	var refreshTokenRequest response.LoginResponse
 	if jsonBindingError := c.ShouldBindJSON(&refreshTokenRequest); jsonBindingError != nil {
 		restErr := utility.NewBadRequestError("Invalid JSON body", &jsonBindingError)
 		c.JSON(restErr.Status, restErr)
 		return
 	}
-	loginResponse, err := service.RefreshToken(refreshTokenRequest.AccessToken, refreshTokenRequest.RefreshToken)
+	loginResponse, err := authService.RefreshToken(refreshTokenRequest.AccessToken, refreshTokenRequest.RefreshToken)
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
@@ -50,13 +58,15 @@ func RefreshToken(c *gin.Context) {
 }
 
 func GenerateCode(c *gin.Context) {
+	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
+	authService := appwiring.InitAuthService(logger)
 	token, ok := c.MustGet("token").(*jwt.Token)
 	aud := c.Query("aud")
 	state := c.Query("state")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, nil)
 	} else {
-		err := service.GenerateCode(token, aud, state)
+		err := authService.GenerateCode(token, aud, state)
 		if err != nil {
 			c.JSON(err.Status, err)
 		} else {
@@ -67,8 +77,10 @@ func GenerateCode(c *gin.Context) {
 }
 
 func ExchangeCode(c *gin.Context) {
+	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
+	authService := appwiring.InitAuthService(logger)
 	state := c.Query("state")
-	data, err := service.ExchangeCode(state)
+	data, err := authService.ExchangeCode(state)
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {
