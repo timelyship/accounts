@@ -16,6 +16,18 @@ import (
 	"timelyship.com/accounts/utility"
 )
 
+type AuthService struct {
+	AuthRepository repository.AuthRepository
+	logger         zap.Logger
+}
+
+func ProvideAuthService(a repository.AuthRepository, l zap.Logger) AuthService {
+	return AuthService{
+		AuthRepository: a,
+		logger:         l,
+	}
+}
+
 func HandleLogin(loginRequest request.LoginRequest) (*response.LoginResponse, *utility.RestError) {
 	user, err := repository.GetUserByEmailOrPhone(loginRequest.EmailOrPhone)
 	if err != nil {

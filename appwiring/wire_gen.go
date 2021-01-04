@@ -18,3 +18,9 @@ func InitAccountService(logger zap.Logger) service.AccountService {
 	accountService := service.ProvideAccountService(accountRepository, logger)
 	return accountService
 }
+
+func InitAuthService(logger zap.Logger) service.AuthService {
+	authRepository := repository.ProvideAuthRepository(logger)
+	authService := service.ProvideAuthService(authRepository, logger)
+	return authService
+}

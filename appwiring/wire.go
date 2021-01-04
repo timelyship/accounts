@@ -14,3 +14,8 @@ func InitAccountService(logger zap.Logger) service.AccountService {
 	wire.Build(repository.ProvideAccountRepository, service.ProvideAccountService)
 	return service.AccountService{}
 }
+
+func InitAuthService(logger zap.Logger) service.AuthService {
+	wire.Build(repository.ProvideAuthRepository, service.ProvideAuthService)
+	return service.AuthService{}
+}
