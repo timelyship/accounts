@@ -2,7 +2,6 @@ package application
 
 import (
 	"go.uber.org/zap"
-	"os"
 )
 
 var (
@@ -12,7 +11,7 @@ var (
 func NewLogger() *zap.Logger {
 	config := zap.NewProductionConfig()
 	config.OutputPaths = []string{
-		os.Getenv("LOGGER_OUTPUT_PATH"),
+		"stdout",
 	}
 
 	config.EncoderConfig.LevelKey = "level"
