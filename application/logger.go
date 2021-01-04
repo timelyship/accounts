@@ -2,7 +2,6 @@ package application
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
@@ -22,6 +21,6 @@ func NewLogger(traceID, spanID, userID string) *zap.Logger {
 	)
 }
 
-func ExtractLogger(c *gin.Context) {
-
+func NewTraceableLogger(l interface{}) zap.Logger {
+	return l.(zap.Logger)
 }

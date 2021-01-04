@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+var (
+	MongoClient = GetClient()
+)
+
 func GetClient() *mongo.Client {
 	uri := os.Getenv("MONGO_CONNECTION_STRING")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

@@ -31,22 +31,22 @@ func ProvideAccountService(a repository.AccountRepository, z zap.Logger) Account
 func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 	validationError := signUpRequest.ApplyUIValidation()
 	if validationError != nil {
-		accountService.logger.Error("Sign up request validation error", zap.Any("validation error", validationError))
+		accountService.logger.Error("Sign up request validation error", zap.Error(validationError.Error))
 		return validationError
 	}
 	// check if an user exists with the email
-	if isExistingEmail, error := repository.IsExistingEmail(signUpRequest.Email); error != nil {
-		accountService.logger.Error("isExistingEmail", zap.Any("isExistingEmail error", error))
-		return error
+	if isExistingEmail, existingEmailError := repository.IsExistingEmail(signUpRequest.Email); existingEmailError != nil {
+		accountService.logger.Error("isExistingEmail", zap.Error(existingEmailError.Error))
+		return existingEmailError
 	} else if isExistingEmail {
 		bizError := fmt.Errorf("an user already exists with email %s", signUpRequest.Email)
-		accountService.logger.Error("bizError", zap.Any("Email already exists", bizError.Error()))
+		accountService.logger.Error("bizError", zap.Error(bizError))
 		return utility.NewBadRequestError("Email Already exists", &bizError)
 	}
 	hashedPassword, passwordHashErr := utility.HashPassword(signUpRequest.Password)
 	if passwordHashErr != nil {
 		passwordHashErrorRest := fmt.Errorf("password hash error %v", passwordHashErr)
-		accountService.logger.Error("passwordHashErrorRest", zap.Any("Email already exists", passwordHashErrorRest.Error()))
+		accountService.logger.Error("passwordHashErrorRest", zap.Error(passwordHashErrorRest))
 		return utility.NewBadRequestError("Email Already exists", &passwordHashErrorRest)
 	}
 	// create user
@@ -62,18 +62,20 @@ func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignU
 	}
 	sErr := repository.SaveUser(&user)
 	if sErr != nil {
+		accountService.logger.Info("User saved successfully", zap.Error(sErr.Error))
 		return sErr
 	}
 	accountService.logger.Info("User saved successfully")
-	emailVerErr := sendEmailVerificationMail(&user)
+	emailVerErr := accountService.sendEmailVerificationMail(&user)
 	if emailVerErr != nil {
-		fmt.Println("Inconsistent DB Error")
+		accountService.logger.Info("Email sending failed, inconsistent database state", zap.Error(emailVerErr.Error))
 		return emailVerErr
 	}
+	accountService.logger.Info("Email sent successfully")
 	return nil
 }
 
-func sendEmailVerificationMail(user *domain.User) *utility.RestError {
+func (accountService *AccountService) sendEmailVerificationMail(user *domain.User) *utility.RestError {
 	secret := strings.ReplaceAll(uuid.New().String(), "-", "")
 	vs := &domain.VerificationSecret{
 		BaseEntity: domain.BaseEntity{
@@ -85,6 +87,7 @@ func sendEmailVerificationMail(user *domain.User) *utility.RestError {
 	}
 	err := repository.SaveVerificationSecret(vs)
 	if err != nil {
+		accountService.logger.Info("Verification secret save failed", zap.Error(err.Error))
 		return err
 	}
 	msgPayload := dto.NewEmailVerificationMsgPayload(
@@ -97,26 +100,36 @@ func sendEmailVerificationMail(user *domain.User) *utility.RestError {
 	)
 	bytes, mErr := json.Marshal(msgPayload)
 	if mErr != nil {
+		accountService.logger.Error("Unable to serialize email payload", zap.Error(mErr))
 		return utility.NewInternalServerError("JSON serialization failed", &mErr)
 	}
 	pErr := utility.PublishEmailVerificationEvent(string(bytes))
 	if pErr != nil {
+		accountService.logger.Error("Unable to send payload to aws", zap.Error(pErr.Error))
 		return pErr
 	}
 	return nil
 }
 
-func VerifyEmail(verificationToken string) *utility.RestError {
+func (accountService *AccountService) VerifyEmail(verificationToken string) *utility.RestError {
 	verificationSecret, err := repository.GetVerificationSecret(verificationToken)
+	accountService.logger.Info("Verification secret",
+		zap.String("verificationToken", verificationToken),
+		zap.String("Subject", verificationSecret.Subject))
 	if err != nil {
+		accountService.logger.Error("Unable to fetch verification secret", zap.Error(err.Error))
 		return err
 	}
 	user, dbErr := repository.GetUserByEmail(verificationSecret.Subject)
 	if dbErr != nil {
+		accountService.logger.Error("Unable to fetch user by email ", zap.Error(dbErr.Error))
 		return dbErr
 	}
 	user.PrimaryEmail = verificationSecret.Subject
 	user.IsPrimaryEmailVerified = true
 	saveErr := repository.UpdateUser(user)
+	if saveErr != nil {
+		accountService.logger.Error("Failed to update user after email verification", zap.Error(saveErr.Error))
+	}
 	return saveErr
 }
