@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -19,6 +21,20 @@ var (
 func LogInterceptor() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
+		var traceId, spanId, userId string
+		if traceId = c.GetHeader("ts-trace-id"); traceId == "" {
+			traceId = strings.ReplaceAll(uuid.New().String(), "-", "")
+		}
+		if spanId = c.GetHeader("ts-trace-id"); spanId == "" {
+			spanId = strings.ReplaceAll(uuid.New().String(), "-", "")
+		}
+		if userIdVal, ok := c.Get("user-id"); ok {
+			userId = userIdVal.(string)
+		}
+		fmt.Println(userId)
+
+		logger := application.NewLogger(traceId, spanId, "<?>")
+		c.Set("logger", logger)
 		// before request
 		c.Next()
 		// after request
@@ -72,6 +88,7 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 		token, err := utility.ValidateToken(tokenString, os.Getenv("ACCESS_SECRET"))
 		if err == nil && token.Valid {
 			c.Set("token", token)
+			// todo : set user id in the logger here.
 			c.Next()
 		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -80,13 +97,12 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 }
 
 func Start() {
-	defer application.SyncLogger()
-	router.Use(LogInterceptor())
+	router.Use(LogInterceptor()) // creates a logger , generates traceID,spanId
 	router.Use(CORSMiddleware())
-	router.Use(AuthenticationMiddleWare())
+	router.Use(AuthenticationMiddleWare()) // decodes user, from token, should be the first one, populates userID
 	mapUrls()
 	err := router.Run(":8080")
 	if err != nil {
-		application.Logger.Error("Error starting app", zap.Error(err))
+		zap.L().Error("Error starting app", zap.Error(err))
 	}
 }

@@ -5,13 +5,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HashPassword(pwd string) string {
+func HashPassword(pwd string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
 	if err != nil {
 		fmt.Printf("Error creating Hash = %v", err)
-		panic(err)
+		return "", err
 	}
-	return string(hash)
+	return string(hash), nil
 }
 
 func ComparePasswords(hashedPwd string, plainPwd string) bool {

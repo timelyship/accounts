@@ -103,7 +103,7 @@ linters:
     - unparam
     - unused
     - varcheck
-    - whitespace
+#    - whitespace
     - asciicheck
     - godot
     - nestif

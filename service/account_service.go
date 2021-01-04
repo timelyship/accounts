@@ -16,20 +16,38 @@ import (
 	"timelyship.com/accounts/utility"
 )
 
-func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
+type AccountService struct {
+	accountRepository repository.AccountRepository
+	logger            zap.Logger
+}
 
+func ProvideAccountService(a repository.AccountRepository, z zap.Logger) AccountService {
+	return AccountService{
+		accountRepository: a,
+		logger:            z,
+	}
+}
+
+func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 	validationError := signUpRequest.ApplyUIValidation()
 	if validationError != nil {
-		application.Logger.Error("Sign up request validation error", zap.Any("validation error", validationError))
+		accountService.logger.Error("Sign up request validation error", zap.Any("validation error", validationError))
 		return validationError
 	}
 	// check if an user exists with the email
 	if isExistingEmail, error := repository.IsExistingEmail(signUpRequest.Email); error != nil {
-		application.Logger.Error("isExistingEmail", zap.Any("isExistingEmail error", error))
+		accountService.logger.Error("isExistingEmail", zap.Any("isExistingEmail error", error))
 		return error
 	} else if isExistingEmail {
 		bizError := fmt.Errorf("an user already exists with email %s", signUpRequest.Email)
+		accountService.logger.Error("bizError", zap.Any("Email already exists", bizError.Error()))
 		return utility.NewBadRequestError("Email Already exists", &bizError)
+	}
+	hashedPassword, passwordHashErr := utility.HashPassword(signUpRequest.Password)
+	if passwordHashErr != nil {
+		passwordHashErrorRest := fmt.Errorf("password hash error %v", passwordHashErr)
+		accountService.logger.Error("passwordHashErrorRest", zap.Any("Email already exists", passwordHashErrorRest.Error()))
+		return utility.NewBadRequestError("Email Already exists", &passwordHashErrorRest)
 	}
 	// create user
 	user := domain.User{
@@ -39,13 +57,14 @@ func InitiateSignUp(signUpRequest request.SignUpRequest) *utility.RestError {
 		LastName:               signUpRequest.LastName,
 		PrimaryEmail:           signUpRequest.Email,
 		IsPrimaryEmailVerified: false,
-		Password:               utility.HashPassword(signUpRequest.Password),
+		Password:               hashedPassword,
 		Roles:                  []*domain.Role{&domain.AppUserRole},
 	}
 	sErr := repository.SaveUser(&user)
 	if sErr != nil {
 		return sErr
 	}
+	accountService.logger.Info("User saved successfully")
 	emailVerErr := sendEmailVerificationMail(&user)
 	if emailVerErr != nil {
 		fmt.Println("Inconsistent DB Error")

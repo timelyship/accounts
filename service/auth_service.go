@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 	"os"
 	"strings"
-	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
@@ -49,7 +48,7 @@ func RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *u
 	}
 	claims, err := utility.DecodeToken(token.RefreshToken, os.Getenv("REFRESH_SECRET"))
 	if err != nil {
-		application.Logger.Info("Todo", zap.Error(err.Error))
+		zap.L().Info("Todo", zap.Error(err.Error))
 	}
 	sub := (*claims)["sub"]
 	userID, hexErr := primitive.ObjectIDFromHex(sub.(string))
@@ -129,11 +128,11 @@ func GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
 
 func InitiateLogin() (*map[string]string, *utility.RestError) {
 	state1 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state2 := strings.Replace(uuid.New().String(), "-", "", -1)
-	state3 := strings.Replace(uuid.New().String(), "-", "", -1)
-	state4 := strings.Replace(uuid.New().String(), "-", "", -1)
+	state2 := strings.ReplaceAll(uuid.New().String(), "-", "")
+	state3 := strings.ReplaceAll(uuid.New().String(), "-", "")
+	state4 := strings.ReplaceAll(uuid.New().String(), "-", "")
 	state := state1 + state2 + state3 + state4
-	key := strings.Replace(uuid.New().String(), "-", "", -1)
+	key := strings.ReplaceAll(uuid.New().String(), "-", "")
 	loginState := &domain.LoginState{
 		State: state,
 		Key:   key,
