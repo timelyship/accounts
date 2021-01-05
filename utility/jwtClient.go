@@ -1,6 +1,7 @@
 package utility
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"time"
 	"timelyship.com/accounts/domain"
+	"timelyship.com/accounts/dto"
 )
 
 // todo - refactor this one.
@@ -70,8 +72,18 @@ func addProfileClaims(claims *jwt.MapClaims, user *domain.User) {
 	(*claims)["last_name"] = user.LastName
 	(*claims)["email"] = user.PrimaryEmail
 	(*claims)["picture"] = FirstNotNullString(user.PrimaryPicture, user.FacebookAuthInfo.Picture, user.GoogleAuthInfo.Picture) //primary_picture
-	(*claims)["roles"] = user.Roles
+	(*claims)["roles"] = toDtoRoles(user.Roles)
 
+}
+
+func toDtoRoles(roles []*domain.Role) []*dto.Role {
+	r := make([]*dto.Role, 0)
+	for _, role := range roles {
+		r = append(r, &dto.Role{
+			Name: role.Name,
+		})
+	}
+	return r
 }
 
 //https://en.wikipedia.org/wiki/JSON_Web_Token
@@ -111,27 +123,40 @@ func DecodeToken(jwtTokenRaw string, secret string) (*jwt.MapClaims, *RestError)
 	return nil, NewUnAuthorizedError("Invalid token", &err)
 }
 
-func ValidateToken(encodedToken, secret string) (*jwt.Token, error) {
-	tokenValidator := func(token *jwt.Token) (interface{}, error) {
-		if _, isValid := token.Method.(*jwt.SigningMethodHMAC); !isValid {
-			return nil, fmt.Errorf("invalid token %v", token.Header["alg"])
-		}
+func ExtractPrincipalFromToken(encodedToken, secret string) (*dto.Principal, error) {
+
+	token, err := jwt.ParseWithClaims(encodedToken, &dto.Principal{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
+	})
+	if err != nil {
+		// todo : log
+		return nil, err
 	}
-	return jwt.Parse(encodedToken, tokenValidator)
+	if !token.Valid {
+		return nil, errors.New("token not valid")
+	}
 
-}
-
-func GetProfileClaims(token *jwt.Token) (map[string]interface{}, *RestError) {
-	claims, ok := token.Claims.(jwt.MapClaims)
+	principal, ok := token.Claims.(*dto.Principal)
 	if !ok {
-		return nil, NewUnAuthorizedError("Token could not be decoded", nil)
+		return nil, errors.New("claims could not cast to principal")
 	}
-	return map[string]interface{}{
-		"firstName": claims["first_name"],
-		"lastName":  claims["last_name"],
-		"email":     claims["email"],
-		"picture":   claims["picture"],
-		"roles":     claims["roles"],
-	}, nil
+	return principal, nil
+
 }
+
+//func GetProfileClaims(token *jwt.Token) (*dto.Principal, *RestError) {
+//	claims, ok := token.Claims.(jwt.MapClaims)
+//	if !ok {
+//		return nil, NewUnAuthorizedError("Token could not be decoded", nil)
+//	}
+//
+//	return &dto.Principal{
+//		FirstName: claims["first_name"].(string),
+//		LastName:  claims["last_name"].(string),
+//		Email:     claims["email"].(string),
+//		Picture:   claims["picture"].(string),
+//		Roles:     claims["roles"].([]domain.Role),
+//		UserID:    claims["sub"].(string),
+//	}, nil
+//
+//}

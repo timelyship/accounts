@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewLogger(traceID, spanID, userID string) *zap.Logger {
+func NewLogger(traceID, spanID string) *zap.Logger {
 	config := zap.NewDevelopmentConfig()
 	config.OutputPaths = []string{
 		"stdout",
@@ -17,10 +17,12 @@ func NewLogger(traceID, spanID, userID string) *zap.Logger {
 	l, _ := config.Build()
 	return l.With(zap.String("traceID", traceID),
 		zap.String("spanID", spanID),
-		zap.String("userID", userID),
 	)
 }
 
-func NewTraceableLogger(l interface{}) zap.Logger {
-	return l.(zap.Logger)
+func NewTraceableLogger(l interface{}, exists bool) *zap.Logger {
+	if exists {
+		return l.(*zap.Logger)
+	}
+	return NewLogger("<?>", "<?>")
 }

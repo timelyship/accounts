@@ -9,8 +9,8 @@ import (
 )
 
 func LoginByFB(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	fbAuthService := appwiring.InitFbLoginService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	fbAuthService := appwiring.InitFbLoginService(*logger)
 
 	queryParams := c.Request.URL.Query()
 	uiState := queryParams["r"][0]
@@ -20,8 +20,8 @@ func LoginByFB(c *gin.Context) {
 }
 
 func HandleRedirectFromDB(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	fbAuthService := appwiring.InitFbLoginService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	fbAuthService := appwiring.InitFbLoginService(*logger)
 	fmt.Println("Login redirect log...")
 	queryParams := c.Request.URL.Query()
 	redirectURI := fbAuthService.HandleFbRedirect(queryParams)

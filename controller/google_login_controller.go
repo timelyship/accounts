@@ -9,8 +9,8 @@ import (
 )
 
 func LoginByGoogle(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	googleAuthService := appwiring.InitGoogleLoginService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	googleAuthService := appwiring.InitGoogleLoginService(*logger)
 	queryParams := c.Request.URL.Query()
 	uiState := queryParams["r"][0]
 	redirectURI, _ := googleAuthService.GetGoogleRedirectURI(uiState)
@@ -19,8 +19,8 @@ func LoginByGoogle(c *gin.Context) {
 }
 
 func HandleRedirectFromGoogle(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	googleAuthService := appwiring.InitGoogleLoginService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	googleAuthService := appwiring.InitGoogleLoginService(*logger)
 	fmt.Println("Login redirect log...")
 	queryParams := c.Request.URL.Query()
 	redirectURI := googleAuthService.HandleGoogleRedirect(queryParams)

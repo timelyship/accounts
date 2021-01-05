@@ -26,13 +26,11 @@ type FacebookAuthInfo struct {
 }
 
 type Role struct {
-	Name   string
-	Parent *Role
+	Name string `bson:"name"`
 }
 
 var AppUserRole = Role{
-	Name:   "APP_USER",
-	Parent: nil,
+	Name: "APP_USER",
 }
 
 type User struct {

@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-var (
-	MongoClient = GetClient()
-)
+//var (
+//	MongoClient = GetClient()
+//)
 
 func GetClient() *mongo.Client {
 	uri := os.Getenv("MONGO_CONNECTION_STRING")

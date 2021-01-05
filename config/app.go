@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -21,20 +20,15 @@ var (
 func LogInterceptor() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
-		var traceId, spanId, userId string
+		var traceId, spanId string
 		if traceId = c.GetHeader("ts-trace-id"); traceId == "" {
 			traceId = strings.ReplaceAll(uuid.New().String(), "-", "")
 		}
 		if spanId = c.GetHeader("ts-trace-id"); spanId == "" {
 			spanId = strings.ReplaceAll(uuid.New().String(), "-", "")
 		}
-		if userIdVal, ok := c.Get("user-id"); ok {
-			userId = userIdVal.(string)
-		}
-		fmt.Println(userId)
 
-		logger := application.NewLogger(traceId, spanId, "<?>")
-		c.Set("logger", logger)
+		c.Set("logger", application.NewLogger(traceId, spanId))
 		// before request
 		c.Next()
 		// after request
@@ -85,11 +79,14 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 			return
 		}
 		tokenString := authHeader[len(BearerSchema):]
-		token, err := utility.ValidateToken(tokenString, os.Getenv("ACCESS_SECRET"))
-		if err == nil && token.Valid {
-			c.Set("token", token)
+		principal, err := utility.ExtractPrincipalFromToken(tokenString, os.Getenv("ACCESS_SECRET"))
+		if err == nil {
+			logger := application.NewTraceableLogger(c.Get("logger"))
+			c.Set("principal", principal)
+			c.Set("logger", logger.With(zap.String("user-id", principal.UserID)))
 			// todo : set user id in the logger here.
 			c.Next()
+
 		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}

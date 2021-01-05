@@ -6,14 +6,15 @@ import (
 	"net/http"
 	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/appwiring"
+	"timelyship.com/accounts/dto"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
 	"timelyship.com/accounts/utility"
 )
 
 func Login(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	authService := appwiring.InitAuthService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	authService := appwiring.InitAuthService(*logger)
 	var loginRequest request.LoginRequest
 	if jsonBindingError := c.ShouldBindJSON(&loginRequest); jsonBindingError != nil {
 		logger.Error("Json bind error, login")
@@ -30,8 +31,8 @@ func Login(c *gin.Context) {
 }
 
 func InitiateLogin(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	authService := appwiring.InitAuthService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	authService := appwiring.InitAuthService(*logger)
 	resp, err := authService.InitiateLogin()
 	if err != nil {
 		c.JSON(err.Status, err)
@@ -41,8 +42,8 @@ func InitiateLogin(c *gin.Context) {
 }
 
 func RefreshToken(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	authService := appwiring.InitAuthService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	authService := appwiring.InitAuthService(*logger)
 	var refreshTokenRequest response.LoginResponse
 	if jsonBindingError := c.ShouldBindJSON(&refreshTokenRequest); jsonBindingError != nil {
 		restErr := utility.NewBadRequestError("Invalid JSON body", &jsonBindingError)
@@ -58,8 +59,8 @@ func RefreshToken(c *gin.Context) {
 }
 
 func GenerateCode(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	authService := appwiring.InitAuthService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	authService := appwiring.InitAuthService(*logger)
 	token, ok := c.MustGet("token").(*jwt.Token)
 	aud := c.Query("aud")
 	state := c.Query("state")
@@ -77,8 +78,8 @@ func GenerateCode(c *gin.Context) {
 }
 
 func ExchangeCode(c *gin.Context) {
-	logger := application.NewTraceableLogger(c.Request.Context().Value("logger"))
-	authService := appwiring.InitAuthService(logger)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	authService := appwiring.InitAuthService(*logger)
 	state := c.Query("state")
 	data, err := authService.ExchangeCode(state)
 	if err != nil {
@@ -91,15 +92,10 @@ func ExchangeCode(c *gin.Context) {
 }
 
 func Profile(c *gin.Context) {
-	token, ok := c.MustGet("token").(*jwt.Token)
+	principal, ok := c.MustGet("principal").(*dto.Principal)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, "token not ok")
+		c.JSON(http.StatusUnauthorized, "principal not ok")
 		return
 	}
-	claims, err := utility.GetProfileClaims(token)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, err)
-		return
-	}
-	c.JSON(http.StatusOK, claims)
+	c.JSON(http.StatusOK, principal)
 }
