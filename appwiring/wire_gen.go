@@ -24,3 +24,9 @@ func InitAuthService(logger zap.Logger) service.AuthService {
 	authService := service.ProvideAuthService(authRepository, logger)
 	return authService
 }
+
+func InitFbLoginService(logger zap.Logger) service.FbLoginService {
+	fbLoginRepository := repository.ProvideFbLoginRepository(logger)
+	fbLoginService := service.ProvideFbLoginService(fbLoginRepository, logger)
+	return fbLoginService
+}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 	"net/http"
 	"net/url"
 	"os"
@@ -14,7 +15,19 @@ import (
 	"timelyship.com/accounts/repository"
 )
 
-func GetFBRedirectURI(uiState string) (string, error) {
+type FbLoginService struct {
+	fbLoginRepository repository.FbLoginRepository
+	logger            zap.Logger
+}
+
+func ProvideFbLoginService(fbLoginRepository repository.FbLoginRepository, logger zap.Logger) FbLoginService {
+	return FbLoginService{
+		fbLoginRepository: fbLoginRepository,
+		logger:            logger,
+	}
+}
+
+func (s *FbLoginService) GetFBRedirectURI(uiState string) (string, error) {
 	state, eUUID := uuid.NewRandom()
 	if eUUID == nil {
 		fmt.Println(uiState)
@@ -36,14 +49,14 @@ func GetFBRedirectURI(uiState string) (string, error) {
 	return "", nil
 }
 
-func HandleFbRedirect(values url.Values) string {
+func (s *FbLoginService) HandleFbRedirect(values url.Values) string {
 	receivedState := values["state"][0]
 	code := values["code"][0]
 	if expected, err := repository.GetByFBState(receivedState); err == nil {
 		fmt.Printf("%v %v", receivedState, expected.State)
 		if receivedState == expected.State {
 			// get user info from google
-			userMap := exchangeTokenWithFb(code)
+			userMap := s.exchangeTokenWithFb(code)
 			fmt.Sprintf("\nfb data = %v\n", userMap)
 			/*
 				fbId := userMap["sub"]
@@ -89,7 +102,7 @@ func HandleFbRedirect(values url.Values) string {
 
 }
 
-func exchangeTokenWithFb(code string) map[string]interface{} {
+func (s *FbLoginService) exchangeTokenWithFb(code string) map[string]interface{} {
 	accessTokenURL := fmt.Sprintf("https://graph.facebook.com/v8.0/oauth/access_token?client_id=%s&redirect_uri=%s&client_secret=%s&code=%s",
 		os.Getenv("FB_OAUTH_CLIENT_ID"), os.Getenv("FB_OAUTH_REDIRECT_URI"), os.Getenv("FB_OAUTH_CLIENT_SECRET"), code)
 	resp, err := http.Get(accessTokenURL)
