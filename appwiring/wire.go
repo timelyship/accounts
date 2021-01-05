@@ -24,3 +24,8 @@ func InitFbLoginService(logger zap.Logger) service.FbLoginService {
 	wire.Build(repository.ProvideFbLoginRepository, service.ProvideFbLoginService)
 	return service.FbLoginService{}
 }
+
+func InitGoogleLoginService(logger zap.Logger) service.GoogleLoginService {
+	wire.Build(repository.ProvideGoogleLoginRepository, repository.ProvideAccountRepository, service.ProvideGoogleLoginService)
+	return service.GoogleLoginService{}
+}

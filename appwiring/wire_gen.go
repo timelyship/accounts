@@ -30,3 +30,10 @@ func InitFbLoginService(logger zap.Logger) service.FbLoginService {
 	fbLoginService := service.ProvideFbLoginService(fbLoginRepository, logger)
 	return fbLoginService
 }
+
+func InitGoogleLoginService(logger zap.Logger) service.GoogleLoginService {
+	accountRepository := repository.ProvideAccountRepository(logger)
+	googleLoginRepository := repository.ProvideGoogleLoginRepository(logger)
+	googleLoginService := service.ProvideGoogleLoginService(accountRepository, googleLoginRepository, logger)
+	return googleLoginService
+}

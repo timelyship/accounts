@@ -166,7 +166,3 @@ func (s AuthService) ExchangeCode(state string) (*domain.LoginState, *utility.Re
 	}
 	return data, nil
 }
-
-func (s AuthService) GetFBRedirectURI(state string) (interface{}, interface{}) {
-
-}
