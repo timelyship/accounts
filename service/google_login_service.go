@@ -76,20 +76,20 @@ func (s *GoogleLoginService) HandleGoogleRedirect(values url.Values) string {
 				existingUser = &domain.User{
 					BaseEntity: domain.BaseEntity{
 						ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-					FirstName:              userMap["given_name"].(string),
-					LastName:               userMap["family_name"].(string),
-					Email:                  userMap["email"].(string),
-					IsPrimaryEmailVerified: userMap["email_verified"].(bool),
-					Picture:                userMap["picture"].(string),
-					DateCreated:            time.Now(),
-					DateUpdated:            time.Now(),
+					FirstName:       userMap["given_name"].(string),
+					LastName:        userMap["family_name"].(string),
+					Email:           userMap["email"].(string),
+					IsEmailVerified: userMap["email_verified"].(bool),
+					Picture:         userMap["picture"].(string),
+					DateCreated:     time.Now(),
+					DateUpdated:     time.Now(),
 					GoogleAuthInfo: domain.GoogleAuthInfo{
 						ID:      userMap["sub"].(string),
 						Email:   userMap["email"].(string),
 						Picture: userMap["picture"].(string),
 					},
 				}
-				if existingUser.IsPrimaryEmailVerified {
+				if existingUser.IsEmailVerified {
 					// save user
 					s.accountRepository.SaveUser(existingUser)
 				} else {

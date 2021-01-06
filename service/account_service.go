@@ -35,7 +35,8 @@ func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignU
 		return validationError
 	}
 	// check if an user exists with the email
-	if isExistingEmail, existingEmailError := accountService.accountRepository.IsExistingEmail(signUpRequest.Email); existingEmailError != nil {
+	if isExistingEmail, existingEmailError :=
+		accountService.accountRepository.IsExistingEmail(signUpRequest.Email); existingEmailError != nil {
 		accountService.logger.Error("isExistingEmail", zap.Error(existingEmailError.Error))
 		return existingEmailError
 	} else if isExistingEmail {
@@ -53,12 +54,14 @@ func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignU
 	user := domain.User{
 		BaseEntity: domain.BaseEntity{
 			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-		FirstName:              signUpRequest.FirstName,
-		LastName:               signUpRequest.LastName,
-		Email:                  signUpRequest.Email,
-		IsPrimaryEmailVerified: false,
-		Password:               hashedPassword,
-		Roles:                  []*domain.Role{&domain.AppUserRole},
+		FirstName:       signUpRequest.FirstName,
+		LastName:        signUpRequest.LastName,
+		Email:           signUpRequest.Email,
+		IsEmailVerified: false,
+		IsPhoneVerified: false,
+		Active:          false,
+		Password:        hashedPassword,
+		Roles:           []*domain.Role{&domain.AppUserRole},
 	}
 	sErr := accountService.accountRepository.SaveUser(&user)
 	if sErr != nil {
@@ -126,7 +129,8 @@ func (accountService *AccountService) VerifyEmail(verificationToken string) *uti
 		return dbErr
 	}
 	user.Email = verificationSecret.Subject
-	user.IsPrimaryEmailVerified = true
+	user.IsEmailVerified = true
+	user.Active = true
 	saveErr := accountService.accountRepository.UpdateUser(user)
 	if saveErr != nil {
 		accountService.logger.Error("Failed to update user after email verification", zap.Error(saveErr.Error))

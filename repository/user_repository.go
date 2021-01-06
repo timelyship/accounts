@@ -43,7 +43,9 @@ func GetUserByEmailOrPhone(emailOrPhone string) (*domain.User, *utility.RestErro
 	defer cancel()
 	verifiedEmailFilter := getVerifiedEmailFilter(emailOrPhone)
 	verifiedPhoneFilter := getVerifiedPhoneFilter(emailOrPhone)
-	filter := bson.D{{Key: "$or", Value: bson.A{verifiedEmailFilter, verifiedPhoneFilter}}}
+	emailOrPhoneFilter := bson.D{{Key: "$or", Value: bson.A{verifiedEmailFilter, verifiedPhoneFilter}}}
+	activeFilter := getActiveUserFilter()
+	filter := bson.D{{Key: "$and", Value: bson.A{emailOrPhoneFilter, activeFilter}}}
 	result := domain.User{}
 	error := GetCollection(UserCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {
@@ -53,15 +55,14 @@ func GetUserByEmailOrPhone(emailOrPhone string) (*domain.User, *utility.RestErro
 	return &result, nil
 }
 
+func getActiveUserFilter() bson.D {
+	return bson.D{{Key: "is_active", Value: true}}
+}
+
 func getVerifiedEmailFilter(emailOrPhone string) bson.D {
-	return bson.D{{Key: "$and", Value: bson.A{
-		bson.D{{Key: "primary_email", Value: emailOrPhone}},
-	}}}
+	return bson.D{{Key: "email", Value: emailOrPhone}}
 }
 
 func getVerifiedPhoneFilter(emailOrPhone string) bson.D {
-	return bson.D{{Key: "$and", Value: bson.A{
-		bson.D{{Key: "phone_numbers.number", Value: emailOrPhone}},
-		bson.D{{Key: "phone_numbers.is_verified", Value: true}},
-	}}}
+	return bson.D{{Key: "phone", Value: emailOrPhone}}
 }
