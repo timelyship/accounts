@@ -37,3 +37,9 @@ func InitGoogleLoginService(logger zap.Logger) service.GoogleLoginService {
 	googleLoginService := service.ProvideGoogleLoginService(accountRepository, googleLoginRepository, logger)
 	return googleLoginService
 }
+
+func InitProfileService(logger zap.Logger) service.ProfileService {
+	profileRepository := repository.ProvideProfileRepository(logger)
+	profileService := service.ProvideProfileService(logger, profileRepository)
+	return profileService
+}

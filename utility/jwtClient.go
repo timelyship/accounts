@@ -70,8 +70,8 @@ func CreateAccessToken(user *domain.User, aud string) (*domain.TokenDetails, err
 func addProfileClaims(claims *jwt.MapClaims, user *domain.User) {
 	(*claims)["firstName"] = user.FirstName
 	(*claims)["lastName"] = user.LastName
-	(*claims)["email"] = user.PrimaryEmail
-	(*claims)["picture"] = FirstNotNullString(user.PrimaryPicture, user.FacebookAuthInfo.Picture, user.GoogleAuthInfo.Picture) //primary_picture
+	(*claims)["email"] = user.Email
+	(*claims)["picture"] = FirstNotNullString(user.Picture, user.FacebookAuthInfo.Picture, user.GoogleAuthInfo.Picture) //primary_picture
 	(*claims)["roles"] = toDtoRoles(user.Roles)
 
 }

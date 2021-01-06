@@ -56,7 +56,6 @@ func GetUserByEmailOrPhone(emailOrPhone string) (*domain.User, *utility.RestErro
 func getVerifiedEmailFilter(emailOrPhone string) bson.D {
 	return bson.D{{Key: "$and", Value: bson.A{
 		bson.D{{Key: "primary_email", Value: emailOrPhone}},
-		bson.D{{Key: "is_primary_email_verified", Value: true}},
 	}}}
 }
 

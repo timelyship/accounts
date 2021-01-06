@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/appwiring"
-	"timelyship.com/accounts/dto"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
 	"timelyship.com/accounts/utility"
@@ -89,13 +88,4 @@ func ExchangeCode(c *gin.Context) {
 			"code": data.Code,
 		})
 	}
-}
-
-func Profile(c *gin.Context) {
-	principal, ok := c.MustGet("principal").(*dto.Principal)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, "principal not ok")
-		return
-	}
-	c.JSON(http.StatusOK, principal)
 }

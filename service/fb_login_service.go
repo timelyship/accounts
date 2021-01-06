@@ -68,9 +68,9 @@ func (s *FbLoginService) HandleFbRedirect(values url.Values) string {
 						BaseEntity:             domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 						FirstName:              userMap["given_name"].(string),
 						LastName:               userMap["family_name"].(string),
-						PrimaryEmail:           userMap["email"].(string),
+						Email:           userMap["email"].(string),
 						IsPrimaryEmailVerified: userMap["email_verified"].(bool),
-						PrimaryPicture:         userMap["picture"].(string),
+						Picture:         userMap["picture"].(string),
 						DateCreated:            time.Now(),
 						DateUpdated:            time.Now(),
 						GoogleAuthInfo: domain.GoogleAuthInfo{

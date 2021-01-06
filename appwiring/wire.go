@@ -29,3 +29,8 @@ func InitGoogleLoginService(logger zap.Logger) service.GoogleLoginService {
 	wire.Build(repository.ProvideGoogleLoginRepository, repository.ProvideAccountRepository, service.ProvideGoogleLoginService)
 	return service.GoogleLoginService{}
 }
+
+func InitProfileService(logger zap.Logger) service.ProfileService {
+	wire.Build(repository.ProvideProfileRepository, service.ProvideProfileService)
+	return service.ProfileService{}
+}

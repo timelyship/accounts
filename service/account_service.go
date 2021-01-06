@@ -55,7 +55,7 @@ func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignU
 			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		FirstName:              signUpRequest.FirstName,
 		LastName:               signUpRequest.LastName,
-		PrimaryEmail:           signUpRequest.Email,
+		Email:                  signUpRequest.Email,
 		IsPrimaryEmailVerified: false,
 		Password:               hashedPassword,
 		Roles:                  []*domain.Role{&domain.AppUserRole},
@@ -81,7 +81,7 @@ func (accountService *AccountService) sendEmailVerificationMail(user *domain.Use
 		BaseEntity: domain.BaseEntity{
 			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		Type:       application.StringConst.Email,
-		Subject:    user.PrimaryEmail,
+		Subject:    user.Email,
 		Secret:     secret,
 		ValidUntil: time.Now().Add(time.Hour * 48),
 	}
@@ -91,7 +91,7 @@ func (accountService *AccountService) sendEmailVerificationMail(user *domain.Use
 		return err
 	}
 	msgPayload := dto.NewEmailVerificationMsgPayload(
-		application.StringConst.VerifyEmail, []string{user.PrimaryEmail},
+		application.StringConst.VerifyEmail, []string{user.Email},
 		[]string{}, []string{"najim.ju@gmail.com"}, map[string]interface{}{
 			"fullName":       fmt.Sprintf("%v %v", user.FirstName, user.LastName),
 			"verificationId": secret,
@@ -125,7 +125,7 @@ func (accountService *AccountService) VerifyEmail(verificationToken string) *uti
 		accountService.logger.Error("Unable to fetch user by email ", zap.Error(dbErr.Error))
 		return dbErr
 	}
-	user.PrimaryEmail = verificationSecret.Subject
+	user.Email = verificationSecret.Subject
 	user.IsPrimaryEmailVerified = true
 	saveErr := accountService.accountRepository.UpdateUser(user)
 	if saveErr != nil {
