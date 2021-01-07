@@ -2,13 +2,15 @@ package application
 
 var (
 	StringConst StringConstants = StringConstants{
-		LogLevelInfo:    "INFO",
-		LogLevelDebug:   "DEBUG",
-		Email:           "Email",
-		Phone:           "Phone",
-		VerifyEmail:     "VerifyEmail",
-		PasswordPattern: "^[a-zA-Z0-9]{8,}$",
+		LogLevelInfo:  "INFO",
+		LogLevelDebug: "DEBUG",
+		Email:         "Email",
+		Phone:         "PhoneNumber",
+		// this string is important, do not change it, if you change it you have to change the email service,
+		//utility.js if(payload.context === 'VERIFY_EMAIL')
+		VerifyEmail: "VERIFY_EMAIL",
 		//nolint:lll    // https://stackoverflow.com/questions/19605150/regex-for-password-must-contain-at-least-eight-characters-at-least-one-number-a
+		PasswordPattern: "^[a-zA-Z0-9]{8,}$",
 		EmailPattern: "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?" +
 			"(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
 	}

@@ -80,11 +80,7 @@ func (r AccountRepository) GetVerificationSecret(secret string) (*domain.Verific
 func (r AccountRepository) GetUserByEmail(email string) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{Key: "$or", Value: bson.A{
-		bson.D{{Key: "primary_email", Value: email}},
-		bson.D{{Key: "google_auth_info.email", Value: email}},
-		bson.D{{Key: "facebook_auth_info.email", Value: email}},
-	}}}
+	filter := bson.D{{Key: "email", Value: email}}
 	result := domain.User{}
 	error := GetCollection(UserCollection).FindOne(ctx, filter).Decode(&result)
 	if error != nil {

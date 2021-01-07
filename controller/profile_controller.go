@@ -17,7 +17,15 @@ func Profile(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, "principal not ok")
 		return
 	}
-	c.JSON(http.StatusOK, principal)
+	logger := application.NewTraceableLogger(c.Get("logger"))
+	profileService := appwiring.InitProfileService(*logger)
+	profile, err := profileService.GetProfileById(principal.UserID)
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+	logger.Debug("Profile debug", zap.Any("profile", profile))
+	c.JSON(http.StatusOK, profile)
 }
 
 func PatchProfile(c *gin.Context) {

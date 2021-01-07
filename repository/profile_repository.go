@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 	"time"
+	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/utility"
 )
@@ -34,6 +35,10 @@ func (r *ProfileRepository) Patch(id string, request []*request.ProfilePatchRequ
 		return utility.NewInternalServerError("Could not replace to database. Try after some time.", &err)
 	}
 	return nil
+}
+
+func (r *ProfileRepository) GetProfileById(id primitive.ObjectID) (*domain.User, *utility.RestError) {
+	return GetUserByID(id)
 }
 
 func ProvideProfileRepository(l zap.Logger) ProfileRepository {
