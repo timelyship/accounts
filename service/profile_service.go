@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
+	"time"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/dto"
 	"timelyship.com/accounts/dto/request"
@@ -63,6 +64,24 @@ func (s *ProfileService) GetProfileById(userID string) (*response.ProfileRespons
 		IsPhoneVerified: user.IsPhoneVerified,
 		UserID:          userID,
 	}, nil
+}
+
+func (s *ProfileService) ChangePhoneNumber(id, phone string) *utility.RestError {
+	err := s.profileRepository.ChangePhoneNumber(id, phone)
+	if err != nil {
+		return err
+	}
+	phoneVerification := &domain.PhoneVerification{
+		BaseEntity: domain.BaseEntity{
+			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+		UserID: id,
+		Phone:  phone,
+	}
+	qErr := s.profileRepository.EnqueuePhoneVerification(phoneVerification)
+	if qErr != nil {
+		s.logger.Warn("Inconsistent database state", zap.Error(qErr.Error))
+	}
+	return qErr
 }
 
 func convertRoles(roles []*domain.Role) []*dto.Role {
