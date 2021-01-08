@@ -3,9 +3,14 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 	"timelyship.com/accounts/application"
@@ -51,9 +56,10 @@ func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignU
 		return utility.NewBadRequestError("Email Already exists", &passwordHashErrorRest)
 	}
 	// create user
+	newUserID := primitive.NewObjectID()
 	user := domain.User{
 		BaseEntity: domain.BaseEntity{
-			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+			ID: newUserID, InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
 		FirstName:       signUpRequest.FirstName,
 		LastName:        signUpRequest.LastName,
 		Email:           signUpRequest.Email,
@@ -75,7 +81,14 @@ func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignU
 		return emailVerErr
 	}
 	accountService.logger.Info("Email sent successfully")
+	accountService.createDefaultProfilePicture(newUserID.Hex())
 	return nil
+}
+
+func generateAwsKeyForUser(id primitive.ObjectID) string {
+	ts := time.Now().UnixNano()
+	idStr := id.String()
+	return fmt.Sprintf("%v%v", ts, idStr[len(idStr)-3:])
 }
 
 func (accountService *AccountService) sendEmailVerificationMail(user *domain.User) *utility.RestError {
@@ -136,4 +149,29 @@ func (accountService *AccountService) VerifyEmail(verificationToken string) *uti
 		accountService.logger.Error("Failed to update user after email verification", zap.Error(saveErr.Error))
 	}
 	return saveErr
+}
+
+func (accountService *AccountService) createDefaultProfilePicture(userID string) {
+	sess, sessErr := session.NewSession(&aws.Config{
+		Region: aws.String("ap-southeast-1")},
+	)
+	if sessErr != nil {
+		accountService.logger.Error("Error creating default profile picture, aws session creation failed", zap.Error(sessErr))
+		return
+	}
+	s3Svc := s3.New(sess)
+	bucketName := os.Getenv("S3_BUCKET_PROFILE_PICTURE")
+	src := fmt.Sprintf("/%s/%s", bucketName, "profile-default.png")
+	copyObjectInput := &s3.CopyObjectInput{
+		Bucket:     aws.String(bucketName),
+		CopySource: aws.String(url.QueryEscape(src)),
+		Key:        aws.String(userID),
+	}
+	result, err := s3Svc.CopyObject(copyObjectInput)
+	if err != nil {
+		accountService.logger.Error("Error creating default profile picture, copy failed", zap.Error(err))
+	} else {
+		accountService.logger.Info("Users default profile created", zap.Any("aws-s3-result", result))
+	}
+
 }

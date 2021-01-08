@@ -78,6 +78,27 @@ func (r *ProfileRepository) EnqueuePhoneVerification(userID primitive.ObjectID, 
 	return nil
 }
 
+func (r *ProfileRepository) UpdateImageUrl(userID primitive.ObjectID, fileName string) *utility.RestError {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	update := bson.M{
+		"$set": bson.M{
+			"picture": fileName,
+		}}
+	updateResult, err := GetCollection(UserCollection).UpdateOne(ctx, bson.M{"_id": userID}, update)
+	if updateResult.MatchedCount == 0 {
+		rErrMsg := fmt.Sprintf("Match not found with key = userId,value=%s, %v", userID, updateResult)
+		rErr := errors.New(rErrMsg)
+		return utility.NewBadRequestError(rErrMsg, &rErr)
+	}
+	r.logger.Debug("updateResult", zap.Any("updateResult", updateResult))
+	if err != nil {
+		r.logger.Error("Update User", zap.Error(err))
+		return utility.NewInternalServerError("Could not replace to database. Try after some time.", &err)
+	}
+	return nil
+}
+
 func ProvideProfileRepository(l zap.Logger) ProfileRepository {
 	return ProfileRepository{
 		logger: l,

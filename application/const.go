@@ -13,6 +13,7 @@ var (
 		PasswordPattern: "^[a-zA-Z0-9]{8,}$",
 		EmailPattern: "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?" +
 			"(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+		DefaultPicture: "16100991235ff80b9e",
 	}
 
 	IntConst IntConstants = IntConstants{
@@ -30,6 +31,7 @@ type StringConstants struct {
 	Email           string
 	Phone           string
 	VerifyEmail     string
+	DefaultPicture  string
 }
 
 type IntConstants struct {

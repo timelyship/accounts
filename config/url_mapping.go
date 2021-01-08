@@ -22,5 +22,6 @@ func mapUrls() {
 	router.GET("/profile", controller.Profile)
 	router.PATCH("/profile-patch", controller.PatchProfile)
 	router.PATCH("/change-phone", controller.ChangePhone)
+	router.PUT("/upload-profile-photo", controller.UploadProfilePhoto)
 	router.GET("/logout", controller.Logout)
 }
