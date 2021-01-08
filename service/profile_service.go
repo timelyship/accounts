@@ -67,17 +67,23 @@ func (s *ProfileService) GetProfileById(userID string) (*response.ProfileRespons
 }
 
 func (s *ProfileService) ChangePhoneNumber(id, phone string) *utility.RestError {
-	err := s.profileRepository.ChangePhoneNumber(id, phone)
+	userID, parseHexErr := primitive.ObjectIDFromHex(id)
+	if parseHexErr != nil {
+		s.logger.Error("User id parse error", zap.Error(parseHexErr))
+		return utility.NewInternalServerError("Could not parse userId", &parseHexErr)
+	}
+
+	err := s.profileRepository.ChangePhoneNumber(userID, phone)
 	if err != nil {
 		return err
 	}
 	phoneVerification := &domain.PhoneVerification{
 		BaseEntity: domain.BaseEntity{
 			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-		UserID: id,
+		UserID: userID,
 		Phone:  phone,
 	}
-	qErr := s.profileRepository.EnqueuePhoneVerification(phoneVerification)
+	qErr := s.profileRepository.EnqueuePhoneVerification(userID, phoneVerification)
 	if qErr != nil {
 		s.logger.Warn("Inconsistent database state", zap.Error(qErr.Error))
 	}

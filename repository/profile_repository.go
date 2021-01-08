@@ -45,12 +45,7 @@ func (r *ProfileRepository) GetProfileById(id primitive.ObjectID) (*domain.User,
 	return GetUserByID(id)
 }
 
-func (r *ProfileRepository) ChangePhoneNumber(id string, phone string) *utility.RestError {
-	userID, parseHexErr := primitive.ObjectIDFromHex(id)
-	if parseHexErr != nil {
-		r.logger.Error("User id parse error", zap.Error(parseHexErr))
-		return utility.NewInternalServerError("Could not parse userId", &parseHexErr)
-	}
+func (r *ProfileRepository) ChangePhoneNumber(userID primitive.ObjectID, phone string) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	update := bson.M{
@@ -60,7 +55,7 @@ func (r *ProfileRepository) ChangePhoneNumber(id string, phone string) *utility.
 		}}
 	updateResult, err := GetCollection(UserCollection).UpdateOne(ctx, bson.M{"_id": userID}, update)
 	if updateResult.MatchedCount == 0 {
-		rErrMsg := fmt.Sprintf("Match not found with key = userId,value=%s, %v", id, updateResult)
+		rErrMsg := fmt.Sprintf("Match not found with key = userId,value=%s, %v", userID, updateResult)
 		rErr := errors.New(rErrMsg)
 		return utility.NewBadRequestError(rErrMsg, &rErr)
 	}
@@ -72,10 +67,11 @@ func (r *ProfileRepository) ChangePhoneNumber(id string, phone string) *utility.
 	return nil
 }
 
-func (r *ProfileRepository) EnqueuePhoneVerification(verification *domain.PhoneVerification) *utility.RestError {
+func (r *ProfileRepository) EnqueuePhoneVerification(userID primitive.ObjectID, verification *domain.PhoneVerification) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_, err := GetCollection(PhoneVerificationQueue).InsertOne(ctx, verification)
+	insertResult, err := GetCollection(PhoneVerificationQueue).InsertOne(ctx, verification)
+	r.logger.Debug("insertResult", zap.Any("insertResult", insertResult))
 	if err != nil {
 		utility.NewInternalServerError("Queue phone verification failed", &err)
 	}
