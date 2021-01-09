@@ -6,10 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
-	"sync"
 )
 
-var once sync.Once
 var mongoClient *mongo.Client
 
 func GetClient() *mongo.Client {
