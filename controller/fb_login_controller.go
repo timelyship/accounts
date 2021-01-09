@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"timelyship.com/accounts/application"
@@ -19,10 +18,10 @@ func LoginByFB(c *gin.Context) {
 	c.Abort()
 }
 
-func HandleRedirectFromDB(c *gin.Context) {
+func HandleRedirectFromFB(c *gin.Context) {
 	logger := application.NewTraceableLogger(c.Get("logger"))
 	fbAuthService := appwiring.InitFbLoginService(*logger)
-	fmt.Println("Login redirect log...")
+	logger.Info("Login redirect log...")
 	queryParams := c.Request.URL.Query()
 	redirectURI := fbAuthService.HandleFbRedirect(queryParams)
 	c.Redirect(http.StatusTemporaryRedirect, redirectURI)

@@ -25,7 +25,7 @@ func NewFBOAuth(responseType, clientID, scopes, redirectURI, state string) *FBOA
 
 func (g *FBOAuth) BuildURI() string {
 	scopeEncoded := url.QueryEscape(g.scopes)
-	fmt.Printf("b4=%v,af=%v\n", g.scopes, scopeEncoded)
+	fmt.Sprintf("b4=%v,af=%v\n", g.scopes, scopeEncoded)
 	fmt.Println("scopeEncoded = ", scopeEncoded)
 	stateEncoded := url.QueryEscape(g.state)
 	fmt.Println("stateEncoded = ", stateEncoded)

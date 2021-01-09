@@ -5,17 +5,18 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
 	"os"
 	"reflect"
 )
 
 func Init() {
 	yamlFile, unMarshallError := ioutil.ReadFile("config.yaml")
-	zap.L().Info("Could not load config.yaml", zap.Error(unMarshallError))
+	log.Printf("Could not load config.yaml, Error = %v", zap.Error(unMarshallError))
 	configMap := make(map[interface{}]interface{})
 	uError := yaml.Unmarshal(yamlFile, &configMap)
 	if uError != nil {
-		zap.L().Info("Could not Unmarshal config.yaml", zap.Error(uError))
+		log.Printf("Could not Unmarshal config.yaml. Error = %v", zap.Error(uError))
 	}
 	flatten("", configMap)
 }

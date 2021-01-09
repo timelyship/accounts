@@ -6,12 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/domain"
@@ -85,14 +83,8 @@ func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignU
 	return nil
 }
 
-func generateAwsKeyForUser(id primitive.ObjectID) string {
-	ts := time.Now().UnixNano()
-	idStr := id.String()
-	return fmt.Sprintf("%v%v", ts, idStr[len(idStr)-3:])
-}
-
 func (accountService *AccountService) sendEmailVerificationMail(user *domain.User) *utility.RestError {
-	secret := strings.ReplaceAll(uuid.New().String(), "-", "")
+	secret := utility.GetUUIDWithoutDash()
 	vs := &domain.VerificationSecret{
 		BaseEntity: domain.BaseEntity{
 			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
@@ -148,6 +140,8 @@ func (accountService *AccountService) VerifyEmail(verificationToken string) *uti
 	if saveErr != nil {
 		accountService.logger.Error("Failed to update user after email verification", zap.Error(saveErr.Error))
 	}
+	// duplicate, to make sure user has a profile pic by default, increase probability
+	accountService.createDefaultProfilePicture(user.ID.Hex())
 	return saveErr
 }
 

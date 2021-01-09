@@ -117,10 +117,6 @@ func (s *ProfileService) UploadProfilePhoto(id string, header *multipart.FileHea
 	s.logger.Info("Uploading file to s3",
 		zap.Int64("Size", header.Size), zap.String("Filename", header.Filename), zap.Any("Header", header.Header),
 	)
-	//extension, extErr := s.getFileExtension(header.Filename)
-	//if extErr != nil {
-	//	return nil, utility.NewBadRequestError("Bad file name", &extErr)
-	//}
 	sess, sessErr := session.NewSession(&aws.Config{
 		Region: aws.String("ap-southeast-1")},
 	)

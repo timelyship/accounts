@@ -37,6 +37,7 @@ func (s *GoogleLoginService) GetGoogleRedirectURI(uiState string) (string, error
 	nonce, eNonce := uuid.NewRandom()
 	if eUUID == nil && eNonce == nil {
 		scopes := os.Getenv("GOOGLE_OAUTH_SCOPES")
+		s.logger.Debug("uiState", zap.String("uiState", uiState))
 		fmt.Println(uiState)
 		gAuth := dto.NewGoogleOpenIDAuth("code",
 			os.Getenv("GOOGLE_OAUTH_CLIENT_ID"),
@@ -55,7 +56,7 @@ func (s *GoogleLoginService) GetGoogleRedirectURI(uiState string) (string, error
 		s.googleLoginRepository.SaveGoogleState(&googleState)
 		return gAuth.BuildURI(), nil
 	} else {
-		fmt.Println("UUID failed")
+		s.logger.Error("UUID failed")
 	}
 	return "", nil
 }
@@ -64,12 +65,12 @@ func (s *GoogleLoginService) HandleGoogleRedirect(values url.Values) string {
 	receivedState := values["state"][0]
 	code := values["code"][0]
 	if expected, err := s.googleLoginRepository.GetByGoogleState(receivedState); err == nil {
-		fmt.Printf("%v %v", receivedState, expected.State)
+		s.logger.Info(fmt.Sprintf("%v %v", receivedState, expected.State))
 		if receivedState == expected.State {
 			// get user info from google
 			userMap := s.exchangeCode(code)
 			googleID := userMap["sub"]
-			fmt.Println(googleID)
+			s.logger.Debug("googleID", zap.Any("googleID", googleID))
 			existingUser, _ := repository.GetUserByGoogleID(fmt.Sprintf("%v", googleID))
 			if existingUser == nil {
 				//create new user
@@ -103,7 +104,7 @@ func (s *GoogleLoginService) HandleGoogleRedirect(values url.Values) string {
 			splits := strings.Split(receivedState, "&")
 			return splits[1]
 		} else {
-			fmt.Println(err)
+			s.logger.Error("err", zap.Error(err.Error))
 		}
 	}
 
@@ -119,7 +120,7 @@ func (s *GoogleLoginService) exchangeCode(code string) map[string]interface{} {
 		"redirect_uri":  {os.Getenv("GOOGLE_OAUTH_REDIRECT_URI")},
 		"grant_type":    {"authorization_code"},
 	}
-	fmt.Printf("\ndebug %v\n", data)
+	s.logger.Debug(fmt.Sprintf("\ndebug %v\n", data))
 
 	resp, err := http.PostForm("https://oauth2.googleapis.com/token", data)
 
@@ -131,7 +132,7 @@ func (s *GoogleLoginService) exchangeCode(code string) map[string]interface{} {
 	json.NewDecoder(resp.Body).Decode(&res)
 	idToken := res["id_token"]
 	user := s.extractToken(idToken.(string))
-	fmt.Printf("\nUSER :\n %v", user)
+	s.logger.Info(fmt.Sprintf("\nUSER :\n %v", user))
 	return user
 }
 

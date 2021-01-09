@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -19,27 +18,36 @@ var (
 
 func LogInterceptor() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		log.Println("Entering Log interceptor")
+		defer log.Println("Exiting Log interceptor")
 		t := time.Now()
 		var traceId, spanId string
 		if traceId = c.GetHeader("ts-trace-id"); traceId == "" {
-			traceId = strings.ReplaceAll(uuid.New().String(), "-", "")
+			traceId = utility.GetUUIDWithoutDash()
 		}
 		if spanId = c.GetHeader("ts-trace-id"); spanId == "" {
-			spanId = strings.ReplaceAll(uuid.New().String(), "-", "")
+			spanId = utility.GetUUIDWithoutDash()
 		}
-
 		c.Set("logger", application.NewLogger(traceId, spanId))
+		c.Writer.Header().Set("traceId", traceId)
+		c.Writer.Header().Set("commit-id", os.Getenv("COMMIT_ID"))
+		c.Writer.Header().Set("live-since", os.Getenv("LIVE_SINCE"))
 		// before request
 		c.Next()
+
 		// after request
-		latency := time.Since(t)
+		latency := time.Since(t).Milliseconds()
 		// access the status we are sending
 		status := c.Writer.Status()
-		log.Println(latency, status)
+		logger := application.NewTraceableLogger(c.Get("logger"))
+		logger.Info("Endpoint analytics", zap.String("path", c.Request.RequestURI), zap.Any("latency", latency), zap.Int("status", status))
 	}
 }
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		log.Println("Entering CORS Middleware")
+		defer log.Println("Exiting CORS Middleware")
+
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, "+
@@ -52,11 +60,12 @@ func CORSMiddleware() gin.HandlerFunc {
 			return
 		}
 		c.Next()
+
 	}
 }
 
 func isWhiteListed(uri string) bool {
-	whiteListedUrls := []string{"/account/login", "/account/sign-up",
+	whiteListedUrls := []string{"/ping", "/account/login", "/account/sign-up",
 		"/initiate-login", "/decode-code", "/exchange-code", "/logout", "/verify-email"}
 	for _, a := range whiteListedUrls {
 		if strings.HasPrefix(uri, a) {
@@ -67,6 +76,9 @@ func isWhiteListed(uri string) bool {
 }
 
 func AuthenticationMiddleWare() gin.HandlerFunc {
+	log.Println("Entering Authentication Middleware")
+	defer log.Println("Exiting Authentication Middleware")
+
 	return func(c *gin.Context) {
 		if isWhiteListed(c.Request.RequestURI) {
 			c.Next()
@@ -83,8 +95,7 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 		if err == nil {
 			logger := application.NewTraceableLogger(c.Get("logger"))
 			c.Set("principal", principal)
-			c.Set("logger", logger.With(zap.String("user-id", principal.UserID)))
-			// todo : set user id in the logger here.
+			c.Set("logger", logger.With(zap.String("userID", principal.UserID)))
 			c.Next()
 
 		} else {
@@ -100,6 +111,6 @@ func Start() {
 	mapUrls()
 	err := router.Run(":8080")
 	if err != nil {
-		zap.L().Error("Error starting app", zap.Error(err))
+		log.Printf("Failed to start app.Error = %v\n", zap.Error(err))
 	}
 }

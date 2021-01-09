@@ -1,7 +1,7 @@
 package application
 
 var (
-	StringConst StringConstants = StringConstants{
+	StringConst = StringConstants{
 		LogLevelInfo:  "INFO",
 		LogLevelDebug: "DEBUG",
 		Email:         "Email",
@@ -16,10 +16,12 @@ var (
 		DefaultPicture: "16100991235ff80b9e",
 	}
 
-	IntConst IntConstants = IntConstants{
+	IntConst = IntConstants{
 		FirstNameMaxLen: 32, //nolint:gomnd
 		LastNameMaxLen:  32, //nolint:gomnd
 		EmailNameMaxLen: 32, //nolint:gomnd
+		// Any database operation greater than 100 ms in regards with MongoDB is considered slow, by default.
+		DbMaxThreshold: 200, //nolint:gomnd, millisecond
 	}
 )
 
@@ -38,4 +40,5 @@ type IntConstants struct {
 	FirstNameMaxLen int
 	LastNameMaxLen  int
 	EmailNameMaxLen int
+	DbMaxThreshold  int
 }

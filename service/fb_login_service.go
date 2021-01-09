@@ -28,32 +28,34 @@ func ProvideFbLoginService(fbLoginRepository repository.FbLoginRepository, logge
 }
 
 func (s *FbLoginService) GetFBRedirectURI(uiState string) (string, error) {
-	state, eUUID := uuid.NewRandom()
-	if eUUID == nil {
-		fmt.Println(uiState)
-		fAuth := dto.NewFBOAuth("token",
-			os.Getenv("FB_OAUTH_CLIENT_ID"),
-			os.Getenv("FB_OAUTH_SCOPES"),
-			os.Getenv("FB_OAUTH_REDIRECT_URI"),
-			fmt.Sprintf("security_token=%v&ui_state=%v", state, uiState),
-		)
-		fbState := domain.FBState{
-			BaseEntity: domain.BaseEntity{
-				ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-			State: fAuth.GetState(),
-		}
-		repository.SaveFBState(&fbState)
-		return fAuth.BuildURI(), nil
+	state, eUUIDError := uuid.NewRandom()
+	if eUUIDError != nil {
+		s.logger.Error("Could not generate new uuid")
+		return "", eUUIDError
 	}
-	fmt.Println("UUID failed")
-	return "", nil
+	s.logger.Info("uiState", zap.String("uiState", uiState))
+	fAuth := dto.NewFBOAuth("token",
+		os.Getenv("FB_OAUTH_CLIENT_ID"),
+		os.Getenv("FB_OAUTH_SCOPES"),
+		os.Getenv("FB_OAUTH_REDIRECT_URI"),
+		fmt.Sprintf("security_token=%v&ui_state=%v", state, uiState),
+	)
+	fbState := domain.FBState{
+		BaseEntity: domain.BaseEntity{
+			ID: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+		State: fAuth.GetState(),
+	}
+	repository.SaveFBState(&fbState)
+	return fAuth.BuildURI(), nil
 }
+
+// Todo : Refactor this to proper golang coding pattern
 
 func (s *FbLoginService) HandleFbRedirect(values url.Values) string {
 	receivedState := values["state"][0]
 	code := values["code"][0]
 	if expected, err := repository.GetByFBState(receivedState); err == nil {
-		fmt.Printf("%v %v", receivedState, expected.State)
+		s.logger.Debug(fmt.Sprintf("%v %v", receivedState, expected.State))
 		if receivedState == expected.State {
 			// get user info from google
 			userMap := s.exchangeTokenWithFb(code)

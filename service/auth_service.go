@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 	"os"
-	"strings"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/dto/request"
 	"timelyship.com/accounts/dto/response"
@@ -28,7 +26,8 @@ func ProvideAuthService(a repository.AuthRepository, l zap.Logger) AuthService {
 	}
 }
 
-func (s AuthService) HandleLogin(loginRequest request.LoginRequest) (*response.LoginResponse, *utility.RestError) {
+func (s *AuthService) HandleLogin(loginRequest request.LoginRequest) (*response.LoginResponse, *utility.RestError) {
+	s.logger.Info("Going to fetch user by username or email", zap.String("EmailOrPhone", loginRequest.EmailOrPhone))
 	user, err := repository.GetUserByEmailOrPhone(loginRequest.EmailOrPhone)
 	if err != nil {
 		return nil, utility.NewUnAuthorizedError("User not found", nil)
@@ -36,27 +35,27 @@ func (s AuthService) HandleLogin(loginRequest request.LoginRequest) (*response.L
 	if !utility.ComparePasswords(user.Password, loginRequest.Password) {
 		return nil, utility.NewUnAuthorizedError("Password not valid", nil)
 	}
+	s.logger.Info("Password ok,going to create token")
 	tokenDetails, tokenError := utility.CreateToken(user, "*")
 	if tokenError != nil {
 		return nil, utility.NewUnAuthorizedError("Token creation failed", &tokenError)
 	}
+	s.logger.Info("Token creation success")
 	saveErr := repository.SaveToken(tokenDetails)
 	if saveErr != nil {
 		return nil, utility.NewUnAuthorizedError("Token persistence failed", &saveErr.Error)
 	}
+	s.logger.Info("Token save success")
 	return &response.LoginResponse{
 		RefreshToken: tokenDetails.RefreshToken,
 		AccessToken:  tokenDetails.AccessToken,
 	}, nil
 }
 
-func (s AuthService) InitiateLogin() (*map[string]string, *utility.RestError) {
-	state1 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state2 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state3 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state4 := strings.ReplaceAll(uuid.New().String(), "-", "")
-	state := state1 + state2 + state3 + state4
-	key := strings.ReplaceAll(uuid.New().String(), "-", "")
+func (s *AuthService) InitiateLogin() (*map[string]string, *utility.RestError) {
+	state := fmt.Sprintf("%s%s%s%s", utility.GetUUIDWithoutDash(),
+		utility.GetUUIDWithoutDash(), utility.GetUUIDWithoutDash(), utility.GetUUIDWithoutDash())
+	key := utility.GetUUIDWithoutDash()
 	loginState := &domain.LoginState{
 		State: state,
 		Key:   key,
@@ -71,34 +70,43 @@ func (s AuthService) InitiateLogin() (*map[string]string, *utility.RestError) {
 	}, nil
 }
 
-func (s AuthService) RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *utility.RestError) {
+func (s *AuthService) RefreshToken(accessToken, refreshToken string) (*response.LoginResponse, *utility.RestError) {
+	s.logger.Info("Getting old token by refresh token")
 	token, err := repository.GetTokenByRefreshToken(refreshToken)
 	if err != nil {
 		return nil, utility.NewUnAuthorizedError("Token persistence failed", &err.Error)
 	}
 	if token.AccessToken != accessToken {
+		s.logger.Error("Access token not matching")
 		return nil, utility.NewUnAuthorizedError("Invalid at,rt pair", nil)
 	}
+	s.logger.Info("Decoding refresh token")
 	claims, err := utility.DecodeToken(token.RefreshToken, os.Getenv("REFRESH_SECRET"))
 	if err != nil {
-		zap.L().Info("Todo", zap.Error(err.Error))
+		s.logger.Info("error decoding refresh token", zap.Error(err.Error))
 	}
 	sub := (*claims)["sub"]
 	userID, hexErr := primitive.ObjectIDFromHex(sub.(string))
 	if hexErr != nil {
 		return nil, utility.NewUnAuthorizedError("Invalid subject", &hexErr)
 	}
+	s.logger.Info("Going to fetch user details by refresh token subject",
+		zap.Any("refreshTokenSub", sub))
 	user, userErr := repository.GetUserByID(userID)
 	if userErr != nil {
 		return nil, utility.NewUnAuthorizedError("User not found for subject", &userErr.Error)
 	}
+	s.logger.Info("Fetched user details by refresh token subject",
+		zap.Any("refreshTokenSub", sub))
 	newAccessToken, tErr := utility.CreateAccessToken(user, "*")
 	if tErr != nil {
 		return nil, utility.NewUnAuthorizedError("Failed to create access token", &tErr)
 	}
+	s.logger.Info("New token creation done")
 	token.AccessToken = newAccessToken.AccessToken
 	token.AccessUUID = newAccessToken.AccessUUID
 	token.AtExpires = newAccessToken.AtExpires
+	s.logger.Info("Updating token")
 	updErr := repository.UpdateToken(token)
 	if updErr != nil {
 		return nil, utility.NewUnAuthorizedError("Failed to create access token", &updErr.Error)
@@ -109,7 +117,9 @@ func (s AuthService) RefreshToken(accessToken, refreshToken string) (*response.L
 	}, nil
 }
 
+// Todo : consider some code documentation
 func (s AuthService) GenerateCode(token *jwt.Token, newAud, state string) *utility.RestError {
+	s.logger.Info("Going to fetch login state by state", zap.String("state", state))
 	loginState, encKErr := repository.GetLoginState(state)
 	if encKErr != nil || loginState.Key == "" {
 		return utility.NewUnAuthorizedError("Invalid state", &encKErr.Error)
@@ -159,6 +169,7 @@ func (s AuthService) GenerateCode(token *jwt.Token, newAud, state string) *utili
 	return nil
 }
 
+// Todo : Consider some documentation
 func (s AuthService) ExchangeCode(state string) (*domain.LoginState, *utility.RestError) {
 	data, err := repository.GetLoginState(state)
 	if err != nil {

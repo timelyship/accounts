@@ -10,7 +10,7 @@ func mapUrls() {
 	router.GET("/login-google", controller.LoginByGoogle)
 	router.GET("/login-fb", controller.LoginByFB)
 	router.GET("/account/google-login/redirect", controller.HandleRedirectFromGoogle)
-	router.GET("/account/fb-login/redirect", controller.HandleRedirectFromDB)
+	router.GET("/account/fb-login/redirect", controller.HandleRedirectFromFB)
 	router.POST("/account/sign-up", controller.SignUp)
 	router.POST("/account/login", controller.Login)
 	router.POST("/account/refresh-token", controller.RefreshToken)

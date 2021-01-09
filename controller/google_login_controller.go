@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"timelyship.com/accounts/application"
@@ -21,7 +20,7 @@ func LoginByGoogle(c *gin.Context) {
 func HandleRedirectFromGoogle(c *gin.Context) {
 	logger := application.NewTraceableLogger(c.Get("logger"))
 	googleAuthService := appwiring.InitGoogleLoginService(*logger)
-	fmt.Println("Login redirect log...")
+	logger.Info("Login redirect log...")
 	queryParams := c.Request.URL.Query()
 	redirectURI := googleAuthService.HandleGoogleRedirect(queryParams)
 	c.Redirect(http.StatusTemporaryRedirect, redirectURI)
