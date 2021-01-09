@@ -4,24 +4,23 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"os"
-	"time"
+	"sync"
 )
 
-//var (
-//	MongoClient = GetClient()
-//)
+var once sync.Once
+var mongoClient *mongo.Client
 
 func GetClient() *mongo.Client {
-	uri := os.Getenv("MONGO_CONNECTION_STRING")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-	if err != nil {
-		// log error
-		panic("Could not connect to database.Try after some time.")
+	return mongoClient
+}
+func DisconnectMongoClient() {
+	if mongoClient != nil {
+		log.Println("Disconnecting mongo connection")
+	} else {
+		log.Println("Can not disconnect mongoClient is null")
 	}
-	return client
 }
 
 func GetDataBase() *mongo.Database {
@@ -30,4 +29,13 @@ func GetDataBase() *mongo.Database {
 
 func GetCollection(collection string) *mongo.Collection {
 	return GetDataBase().Collection(collection)
+}
+
+func init() {
+	var err error
+	uri := os.Getenv("MONGO_CONNECTION_STRING")
+	mongoClient, err = mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+	if err != nil {
+		log.Fatal("Could not connect to database.Try after some time.")
+	}
 }

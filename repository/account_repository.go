@@ -15,7 +15,7 @@ type AccountRepository struct {
 	logger zap.Logger
 }
 
-func (r AccountRepository) IsExistingEmail(email string) (bool, *utility.RestError) {
+func (r *AccountRepository) IsExistingEmail(email string) (bool, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	// https://stackoverflow.com/questions/51179588/how-to-sort-and-limit-results-in-mongodb/51181206
@@ -34,7 +34,7 @@ func (r AccountRepository) IsExistingEmail(email string) (bool, *utility.RestErr
 	return count > 0, nil
 }
 
-func (r AccountRepository) SaveUser(user *domain.User) *utility.RestError {
+func (r *AccountRepository) SaveUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_, error := GetCollection(UserCollection).InsertOne(ctx, user)
@@ -46,7 +46,7 @@ func (r AccountRepository) SaveUser(user *domain.User) *utility.RestError {
 	return nil
 }
 
-func (r AccountRepository) SaveVerificationSecret(vs *domain.VerificationSecret) *utility.RestError {
+func (r *AccountRepository) SaveVerificationSecret(vs *domain.VerificationSecret) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_, error := GetCollection(VerificationSecretCollection).InsertOne(ctx, vs)
@@ -57,7 +57,7 @@ func (r AccountRepository) SaveVerificationSecret(vs *domain.VerificationSecret)
 	return nil
 }
 
-func (r AccountRepository) GetVerificationSecret(secret string) (*domain.VerificationSecret, *utility.RestError) {
+func (r *AccountRepository) GetVerificationSecret(secret string) (*domain.VerificationSecret, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{Key: "$and", Value: bson.A{
@@ -77,7 +77,7 @@ func (r AccountRepository) GetVerificationSecret(secret string) (*domain.Verific
 	return &result, nil
 }
 
-func (r AccountRepository) GetUserByEmail(email string) (*domain.User, *utility.RestError) {
+func (r *AccountRepository) GetUserByEmail(email string) (*domain.User, *utility.RestError) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{Key: "email", Value: email}}
@@ -90,7 +90,7 @@ func (r AccountRepository) GetUserByEmail(email string) (*domain.User, *utility.
 	return &result, nil
 }
 
-func (r AccountRepository) UpdateUser(user *domain.User) *utility.RestError {
+func (r *AccountRepository) UpdateUser(user *domain.User) *utility.RestError {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{Key: "_id", Value: user.ID}}
