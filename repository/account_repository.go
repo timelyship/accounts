@@ -22,7 +22,8 @@ func (r *AccountRepository) IsExistingEmail(email string) (bool, *utility.RestEr
 	options := options.Find()
 	options.SetLimit(1)
 	filter := bson.D{{Key: "$or", Value: bson.A{
-		bson.D{{Key: "primary_email", Value: email}},
+		bson.D{{Key: "email", Value: email}},
+		// todo : fix this when you implement google auth flow
 		bson.D{{Key: "google_auth_info.email", Value: email}},
 		bson.D{{Key: "facebook_auth_info.email", Value: email}},
 	}}}

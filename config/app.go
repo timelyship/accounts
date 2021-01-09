@@ -107,6 +107,7 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 
 func Start() {
 	repository.InitClient()
+	defer repository.DisconnectMongoClient()
 	router.Use(LogInterceptor()) // creates a logger , generates traceID,spanId
 	router.Use(CORSMiddleware())
 	router.Use(AuthenticationMiddleWare()) // decodes user, from token, should be the first one, populates userID

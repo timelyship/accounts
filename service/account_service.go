@@ -37,10 +37,10 @@ func (accountService *AccountService) InitiateSignUp(signUpRequest request.SignU
 		accountService.logger.Error("Sign up request validation error", zap.Error(validationError.Error))
 		return validationError
 	}
+	isExistingEmail, existingEmailError := accountService.accountRepository.IsExistingEmail(signUpRequest.Email)
 	// check if an user exists with the email
-	if isExistingEmail, existingEmailError :=
-		accountService.accountRepository.IsExistingEmail(signUpRequest.Email); existingEmailError != nil {
-		accountService.logger.Error("isExistingEmail", zap.Error(existingEmailError.Error))
+	if existingEmailError != nil {
+		accountService.logger.Error("existingEmailError", zap.Error(existingEmailError.Error))
 		return existingEmailError
 	} else if isExistingEmail {
 		bizError := fmt.Errorf("an user already exists with email %s", signUpRequest.Email)

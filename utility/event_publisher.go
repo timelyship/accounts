@@ -8,6 +8,9 @@ import (
 )
 
 func PublishEmailVerificationEvent(payload string) *RestError {
+	if os.Getenv("PUBLISH_EMAIL_VERIFICATION_MSG_TO_SQS") == "false" {
+		return nil
+	}
 	sess := session.Must(session.NewSessionWithOptions(
 		session.Options{
 			SharedConfigState: session.SharedConfigEnable,
