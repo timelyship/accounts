@@ -32,8 +32,13 @@ func SignUp(c *gin.Context) {
 func VerifyEmail(c *gin.Context) {
 	logger := application.NewTraceableLogger(c.Get("logger"))
 	accountService := appwiring.InitAccountService(*logger)
-	verificationToken := c.Param("verificationToken")
-	err := accountService.VerifyEmail(verificationToken)
+	var emailVerificationRequest request.EmailVerificationRequest
+	if jsonBindingError := c.ShouldBindJSON(&emailVerificationRequest); jsonBindingError != nil {
+		restErr := utility.NewBadRequestError("Invalid JSON body", &jsonBindingError)
+		c.JSON(restErr.Status, restErr)
+		return
+	}
+	err := accountService.VerifyEmail(emailVerificationRequest.Secret)
 	if err != nil {
 		c.JSON(err.Status, err)
 	} else {

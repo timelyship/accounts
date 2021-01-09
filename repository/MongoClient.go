@@ -29,7 +29,7 @@ func GetCollection(collection string) *mongo.Collection {
 	return GetDataBase().Collection(collection)
 }
 
-func init() {
+func InitClient() {
 	var err error
 	uri := os.Getenv("MONGO_CONNECTION_STRING")
 	mongoClient, err = mongo.Connect(context.Background(), options.Client().ApplyURI(uri))

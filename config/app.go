@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"timelyship.com/accounts/application"
+	"timelyship.com/accounts/repository"
 	"timelyship.com/accounts/utility"
 )
 
@@ -105,6 +106,7 @@ func AuthenticationMiddleWare() gin.HandlerFunc {
 }
 
 func Start() {
+	repository.InitClient()
 	router.Use(LogInterceptor()) // creates a logger , generates traceID,spanId
 	router.Use(CORSMiddleware())
 	router.Use(AuthenticationMiddleWare()) // decodes user, from token, should be the first one, populates userID

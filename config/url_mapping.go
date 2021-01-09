@@ -14,7 +14,7 @@ func mapUrls() {
 	router.POST("/account/sign-up", controller.SignUp)
 	router.POST("/account/login", controller.Login)
 	router.POST("/account/refresh-token", controller.RefreshToken)
-	router.POST("/verify-email/:verificationToken", controller.VerifyEmail)
+	router.POST("/verify-email", controller.VerifyEmail)
 	router.GET("/initiate-login", controller.InitiateLogin)
 	router.GET("/generate-code", controller.GenerateCode)
 	router.GET("/decode-code", controller.Decode)

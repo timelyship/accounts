@@ -12,7 +12,10 @@ import (
 
 func Init() {
 	yamlFile, unMarshallError := ioutil.ReadFile("config.yaml")
-	log.Printf("Could not load config.yaml, Error = %v", zap.Error(unMarshallError))
+	if unMarshallError != nil {
+		log.Printf("Could not load config.yaml, Error = %v", zap.Error(unMarshallError))
+		panic(unMarshallError)
+	}
 	configMap := make(map[interface{}]interface{})
 	uError := yaml.Unmarshal(yamlFile, &configMap)
 	if uError != nil {
