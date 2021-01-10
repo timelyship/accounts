@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 )
 
@@ -25,10 +26,10 @@ func NewFBOAuth(responseType, clientID, scopes, redirectURI, state string) *FBOA
 
 func (g *FBOAuth) BuildURI() string {
 	scopeEncoded := url.QueryEscape(g.scopes)
-	fmt.Sprintf("b4=%v,af=%v\n", g.scopes, scopeEncoded)
-	fmt.Println("scopeEncoded = ", scopeEncoded)
+	log.Printf("b4=%v,af=%v\n", g.scopes, scopeEncoded)
+	log.Printf("scopeEncoded = %s", scopeEncoded)
 	stateEncoded := url.QueryEscape(g.state)
-	fmt.Println("stateEncoded = ", stateEncoded)
+	log.Printf("stateEncoded = %s", stateEncoded)
 
 	uri := "https://www.facebook.com/v8.0/dialog/oauth?" +
 		"client_id=%s&redirect_uri=%s&state=%s&response_type=code&scope=%s&display=popup"

@@ -22,14 +22,14 @@ func LogInterceptor() gin.HandlerFunc {
 		log.Println("Entering Log interceptor")
 		defer log.Println("Exiting Log interceptor")
 		t := time.Now()
-		var traceID, spanId string
+		var traceID, spanID string
 		if traceID = c.GetHeader("ts-trace-id"); traceID == "" {
 			traceID = utility.GetUUIDWithoutDash()
 		}
-		if spanId = c.GetHeader("ts-trace-id"); spanId == "" {
-			spanId = utility.GetUUIDWithoutDash()
+		if spanID = c.GetHeader("ts-trace-id"); spanID == "" {
+			spanID = utility.GetUUIDWithoutDash()
 		}
-		c.Set("logger", application.NewLogger(traceID, spanId))
+		c.Set("logger", application.NewLogger(traceID, spanID))
 		c.Writer.Header().Set("traceId", traceID)
 		c.Writer.Header().Set("commit-id", os.Getenv("COMMIT_ID"))
 		c.Writer.Header().Set("live-since", os.Getenv("LIVE_SINCE"))

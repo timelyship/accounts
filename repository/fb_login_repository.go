@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
-	"time"
+	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/utility"
 )
@@ -23,7 +23,7 @@ func ProvideFbLoginRepository(logger zap.Logger) FbLoginRepository {
 }
 
 func GetByFBState(state string) (*domain.FBState, *utility.RestError) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), application.IntConst.DBAccessMaxThreshold)
 	defer cancel()
 	filter := bson.D{{Key: "state", Value: state}}
 	result := domain.FBState{}
@@ -36,7 +36,7 @@ func GetByFBState(state string) (*domain.FBState, *utility.RestError) {
 }
 
 func SaveFBState(fbState *domain.FBState) *utility.RestError {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), application.IntConst.DBAccessMaxThreshold)
 	defer cancel()
 	insertResult, error := GetCollection(FbStateCollection).InsertOne(ctx, fbState)
 	if error != nil {

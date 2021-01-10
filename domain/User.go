@@ -4,19 +4,6 @@ import (
 	"time"
 )
 
-// https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#email-state-typeemail
-// var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?
-// (?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-
-/*
-type PhoneNumber struct {
-	Number      string `bson:"number"`
-	IsPrimary   bool   `bson:"is_primary"`
-	IsVerified  bool   `bson:"is_verified"`
-	IsEmergency bool   `bson:"is_verified"`
-}
-*/
-
 type GoogleAuthInfo struct {
 	ID      string
 	Email   string // email must be verified
