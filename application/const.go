@@ -23,7 +23,8 @@ var (
 		LastNameMaxLen:  32, //nolint:gomnd
 		EmailNameMaxLen: 32, //nolint:gomnd
 		// Any database operation greater than 100 ms in regards with MongoDB is considered slow, by default.
-		DBAccessMaxThreshold: 200 * time.Millisecond, //nolint:gomnd, millisecond
+		DBAccessMaxThreshold:     200 * time.Millisecond, //nolint:gomnd, millisecond
+		ExternalCallMaxThreshold: 500 * time.Millisecond, //nolint:gomnd, millisecond
 	}
 )
 
@@ -39,8 +40,9 @@ type StringConstants struct {
 }
 
 type IntConstants struct {
-	FirstNameMaxLen      int
-	LastNameMaxLen       int
-	EmailNameMaxLen      int
-	DBAccessMaxThreshold time.Duration
+	FirstNameMaxLen          int
+	LastNameMaxLen           int
+	EmailNameMaxLen          int
+	DBAccessMaxThreshold     time.Duration
+	ExternalCallMaxThreshold time.Duration
 }

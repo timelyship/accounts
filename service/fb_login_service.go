@@ -18,6 +18,7 @@ import (
 type FbLoginService struct {
 	fbLoginRepository repository.FbLoginRepository
 	logger            zap.Logger
+	httpClient        HTTPClient
 }
 
 func ProvideFbLoginService(fbLoginRepository repository.FbLoginRepository, logger zap.Logger) FbLoginService {
@@ -109,44 +110,36 @@ func (s *FbLoginService) exchangeTokenWithFb(code string) map[string]interface{}
 	accessTokenURL := fmt.Sprintf(
 		"https://graph.facebook.com/v8.0/oauth/access_token?client_id=%s&redirect_uri=%s&client_secret=%s&code=%s",
 		os.Getenv("FB_OAUTH_CLIENT_ID"), os.Getenv("FB_OAUTH_REDIRECT_URI"), os.Getenv("FB_OAUTH_CLIENT_SECRET"), code)
-	resp, err := http.Get(accessTokenURL) //nolint:gosec
-
-	if err != nil {
-		panic(err)
-	}
 	var response map[string]interface{}
-	respDecodeErr := json.NewDecoder(resp.Body).Decode(&response)
+	accessTokenBytes, atErr := s.httpClient.SendWithContext(http.MethodGet, accessTokenURL, nil)
+	if atErr != nil {
+		// todo : handle error in go way
+		s.logger.Error("could not decode response from facebook", zap.Error(atErr))
+	}
+	respDecodeErr := json.Unmarshal(accessTokenBytes, &response)
 	if respDecodeErr != nil {
 		// todo: Refactor it properly instead of just logging
-		s.logger.Error("coud not decode response from facebook", zap.Error(respDecodeErr))
+		s.logger.Error("could not decode response from facebook", zap.Error(respDecodeErr))
 	}
 	accessToken := response["access_token"]
 	fmt.Printf("facebook data = %v", response)
 
-	//userInfoUrl := fmt.Sprintf("https://graph.facebook.com/debug_token?input_token=%s&access_token=%s|%s",
-	//	accessToken, os.Getenv("FB_OAUTH_CLIENT_ID"), os.Getenv("FB_OAUTH_CLIENT_SECRET"))
-	userInfoUrl := fmt.Sprintf("https://graph.facebook.com/me?fields=id,first_name,last_name,picture,email&access_token=%s",
+	userInfoURL := fmt.Sprintf(
+		"https://graph.facebook.com/me?fields=id,first_name,last_name,picture,email&access_token=%s",
 		accessToken)
 
-	resp2, uError := http.Get(userInfoUrl)
+	userDataBytes, uError := s.httpClient.SendWithContext(http.MethodGet, userInfoURL, nil)
+	if uError != nil {
+		// todo: Refactor it properly instead of just logging
+		s.logger.Error("could not decode response from facebook", zap.Error(uError))
+	}
 	fmt.Printf("Error = %v", uError)
 	var userData map[string]interface{}
-	json.NewDecoder(resp2.Body).Decode(&userData)
+	userDataUmErr := json.Unmarshal(userDataBytes, &userData)
+	if userDataUmErr != nil {
+		// todo: Refactor it properly instead of just logging
+		s.logger.Error("could not decode response from facebook", zap.Error(userDataUmErr))
+	}
 	fmt.Printf("user data = %v", userData)
 	return userData
-
-	//var res map[string]interface{}
-	//json.NewDecoder(resp.Body).Decode(&res)
-	//idToken := res["id_token"]
-	//user := extractToken(idToken.(string))
-	//fmt.Printf("\nUSER :\n %v", user)
-	//return user
 }
-
-//func extractToken(token string) map[string]interface{} {
-//	splits := strings.Split(token, ".")
-//	userJsonStrBytes, _ := base64.StdEncoding.DecodeString(splits[1])
-//	var result map[string]interface{}
-//	json.Unmarshal(userJsonStrBytes, &result)
-//	return result
-//}
