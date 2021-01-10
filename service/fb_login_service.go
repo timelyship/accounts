@@ -21,7 +21,8 @@ type FbLoginService struct {
 	httpClient        HTTPClient
 }
 
-func ProvideFbLoginService(fbLoginRepository repository.FbLoginRepository, logger zap.Logger) FbLoginService {
+func ProvideFbLoginService(
+	fbLoginRepository repository.FbLoginRepository, logger zap.Logger, httpClient HTTPClient) FbLoginService {
 	return FbLoginService{
 		fbLoginRepository: fbLoginRepository,
 		logger:            logger,

@@ -20,7 +20,7 @@ func InitAuthService(logger zap.Logger) service.AuthService {
 	return service.AuthService{}
 }
 
-func InitFbLoginService(logger zap.Logger) service.FbLoginService {
+func InitFbLoginService(logger zap.Logger, httpClient service.HTTPClient) service.FbLoginService {
 	wire.Build(repository.ProvideFbLoginRepository, service.ProvideFbLoginService)
 	return service.FbLoginService{}
 }

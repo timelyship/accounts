@@ -25,9 +25,9 @@ func InitAuthService(logger zap.Logger) service.AuthService {
 	return authService
 }
 
-func InitFbLoginService(logger zap.Logger) service.FbLoginService {
+func InitFbLoginService(logger zap.Logger, httpClient service.HTTPClient) service.FbLoginService {
 	fbLoginRepository := repository.ProvideFbLoginRepository(logger)
-	fbLoginService := service.ProvideFbLoginService(fbLoginRepository, logger)
+	fbLoginService := service.ProvideFbLoginService(fbLoginRepository, logger, httpClient)
 	return fbLoginService
 }
 
