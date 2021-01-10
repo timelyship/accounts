@@ -1,12 +1,11 @@
 package service
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
+	"log"
 	"net/url"
 	"os"
 	"strings"
@@ -101,7 +100,7 @@ func (s *GoogleLoginService) HandleGoogleRedirect(values url.Values) string {
 			splits := strings.Split(receivedState, "&")
 			return splits[1]
 		}
-		s.logger.Error("err", zap.Error(err.Error))
+		// s.logger.Error("err", zap.Error(err.Error))
 	}
 
 	return ""
@@ -109,6 +108,7 @@ func (s *GoogleLoginService) HandleGoogleRedirect(values url.Values) string {
 }
 
 func (s *GoogleLoginService) exchangeCode(code string) map[string]interface{} {
+	log.Println(code)
 	/*
 		data := url.Values{
 			"code":          {code},
@@ -135,6 +135,7 @@ func (s *GoogleLoginService) exchangeCode(code string) map[string]interface{} {
 	return nil
 }
 
+/*
 func (s *GoogleLoginService) extractToken(token string) map[string]interface{} {
 	splits := strings.Split(token, ".")
 	userJSONStrBytes, _ := base64.StdEncoding.DecodeString(splits[1])
@@ -142,3 +143,4 @@ func (s *GoogleLoginService) extractToken(token string) map[string]interface{} {
 	json.Unmarshal(userJSONStrBytes, &result) //nolint:errcheck
 	return result
 }
+*/

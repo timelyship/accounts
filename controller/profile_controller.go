@@ -2,7 +2,6 @@ package controller
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"io"
@@ -86,24 +85,23 @@ func UploadProfilePhoto(c *gin.Context) {
 	}
 	logger := application.NewTraceableLogger(c.Get("logger"))
 	profileService := appwiring.InitProfileService(*logger)
-	//file, err := c.FormFile("file")
 	file, header, err := c.Request.FormFile("file")
 	if file == nil {
-		msg := fmt.Sprintf("File is nil, invalid name")
+		msg := "File is nil, invalid name"
 		rErr := utility.NewBadRequestError(msg, &err)
 		c.JSON(rErr.Status, rErr)
 		return
 	}
 	if err != nil {
-		msg := fmt.Sprintf("File extraction failed from request")
+		msg := "File extraction failed from request"
 		rErr := utility.NewBadRequestError(msg, &err)
 		c.JSON(rErr.Status, rErr)
 		return
 	}
 	defer file.Close()
 	buf := bytes.NewBuffer(nil)
-	if _, copyErr := io.Copy(buf, file); err != nil {
-		msg := fmt.Sprintf("Could not read content of the file")
+	if _, copyErr := io.Copy(buf, file); copyErr != nil {
+		msg := "Could not read content of the file"
 		rErr := utility.NewBadRequestError(msg, &copyErr)
 		c.JSON(rErr.Status, rErr)
 		return
