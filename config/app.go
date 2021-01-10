@@ -22,15 +22,15 @@ func LogInterceptor() gin.HandlerFunc {
 		log.Println("Entering Log interceptor")
 		defer log.Println("Exiting Log interceptor")
 		t := time.Now()
-		var traceId, spanId string
-		if traceId = c.GetHeader("ts-trace-id"); traceId == "" {
-			traceId = utility.GetUUIDWithoutDash()
+		var traceID, spanId string
+		if traceID = c.GetHeader("ts-trace-id"); traceID == "" {
+			traceID = utility.GetUUIDWithoutDash()
 		}
 		if spanId = c.GetHeader("ts-trace-id"); spanId == "" {
 			spanId = utility.GetUUIDWithoutDash()
 		}
-		c.Set("logger", application.NewLogger(traceId, spanId))
-		c.Writer.Header().Set("traceId", traceId)
+		c.Set("logger", application.NewLogger(traceID, spanId))
+		c.Writer.Header().Set("traceId", traceID)
 		c.Writer.Header().Set("commit-id", os.Getenv("COMMIT_ID"))
 		c.Writer.Header().Set("live-since", os.Getenv("LIVE_SINCE"))
 		// before request
@@ -41,7 +41,8 @@ func LogInterceptor() gin.HandlerFunc {
 		// access the status we are sending
 		status := c.Writer.Status()
 		logger := application.NewTraceableLogger(c.Get("logger"))
-		logger.Info("Endpoint analytics", zap.String("path", c.Request.RequestURI), zap.Any("latency", latency), zap.Int("status", status))
+		logger.Info("Endpoint analytics", zap.String("path", c.Request.RequestURI),
+			zap.Any("latency", latency), zap.Int("status", status))
 	}
 }
 func CORSMiddleware() gin.HandlerFunc {

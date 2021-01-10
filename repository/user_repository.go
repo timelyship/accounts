@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
+	"timelyship.com/accounts/application"
 	"timelyship.com/accounts/domain"
 	"timelyship.com/accounts/utility"
 )
@@ -13,7 +13,7 @@ import (
 const UserCollection = "user"
 
 func GetUserByGoogleID(googleID string) (*domain.User, *utility.RestError) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), application.IntConst.DBAccessMaxThreshold)
 	defer cancel()
 	filter := bson.D{{Key: "google_auth_info.id", Value: googleID}}
 	result := domain.User{}
@@ -26,7 +26,7 @@ func GetUserByGoogleID(googleID string) (*domain.User, *utility.RestError) {
 }
 
 func GetUserByID(id primitive.ObjectID) (*domain.User, *utility.RestError) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), application.IntConst.DBAccessMaxThreshold)
 	defer cancel()
 	filter := bson.D{{Key: "_id", Value: id}}
 	result := domain.User{}
@@ -39,7 +39,7 @@ func GetUserByID(id primitive.ObjectID) (*domain.User, *utility.RestError) {
 }
 
 func GetUserByEmailOrPhone(emailOrPhone string) (*domain.User, *utility.RestError) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), application.IntConst.DBAccessMaxThreshold)
 	defer cancel()
 	verifiedEmailFilter := getVerifiedEmailFilter(emailOrPhone)
 	verifiedPhoneFilter := getVerifiedPhoneFilter(emailOrPhone)

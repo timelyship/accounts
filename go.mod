@@ -3,8 +3,6 @@ module timelyship.com/accounts
 go 1.15
 
 require (
-	github.com/Luzifer/go-openssl v2.0.0+incompatible
-	github.com/Luzifer/go-openssl/v4 v4.1.0 // indirect
 	github.com/aws/aws-sdk-go v1.35.27
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3

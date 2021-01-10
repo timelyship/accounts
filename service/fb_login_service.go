@@ -59,41 +59,42 @@ func (s *FbLoginService) HandleFbRedirect(values url.Values) string {
 		if receivedState == expected.State {
 			// get user info from google
 			userMap := s.exchangeTokenWithFb(code)
-			fmt.Sprintf("\nfb data = %v\n", userMap)
+			s.logger.Info(fmt.Sprintf("\nfb data = %v\n", userMap))
 			/*
-				fbId := userMap["sub"]
-				fmt.Println(fbId)
-				existingUser, _ := repository.GetUserByGoogleId(fmt.Sprintf("%v", fbId))
-				if existingUser == nil {
-					//create new user
-					existingUser = &domain.User{
-						BaseEntity:             domain.BaseEntity{Id: primitive.NewObjectID(), InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
-						FirstName:              userMap["given_name"].(string),
-						LastName:               userMap["family_name"].(string),
-						Email:           userMap["email"].(string),
-						IsPrimaryEmailVerified: userMap["email_verified"].(bool),
-						Picture:         userMap["picture"].(string),
-						DateCreated:            time.Now(),
-						DateUpdated:            time.Now(),
-						GoogleAuthInfo: domain.GoogleAuthInfo{
-							Id:      userMap["sub"].(string),
-							Email:   userMap["email"].(string),
-							Picture: userMap["picture"].(string),
-						},
-					}
-					if existingUser.IsPrimaryEmailVerified {
-						// save user
-						repository.SaveUser(existingUser)
+					fbId := userMap["sub"]
+					fmt.Println(fbId)
+					existingUser, _ := repository.GetUserByGoogleId(fmt.Sprintf("%v", fbId))
+					if existingUser == nil {
+						//create new user
+						existingUser = &domain.User{
+							BaseEntity:             domain.BaseEntity{Id: primitive.NewObjectID(),
+				InsertedAt: time.Now().UTC(), LastUpdate: time.Now().UTC()},
+							FirstName:              userMap["given_name"].(string),
+							LastName:               userMap["family_name"].(string),
+							Email:           userMap["email"].(string),
+							IsPrimaryEmailVerified: userMap["email_verified"].(bool),
+							Picture:         userMap["picture"].(string),
+							DateCreated:            time.Now(),
+							DateUpdated:            time.Now(),
+							GoogleAuthInfo: domain.GoogleAuthInfo{
+								Id:      userMap["sub"].(string),
+								Email:   userMap["email"].(string),
+								Picture: userMap["picture"].(string),
+							},
+						}
+						if existingUser.IsPrimaryEmailVerified {
+							// save user
+							repository.SaveUser(existingUser)
+						} else {
+							// raise panic
+						}
 					} else {
-						// raise panic
+						// create exchange code
 					}
-				} else {
-					// create exchange code
-				}
-				// create or update user
-				// give exchange code to the user
-				splits := strings.Split(receivedState, "&")
-				return splits[1]
+					// create or update user
+					// give exchange code to the user
+					splits := strings.Split(receivedState, "&")
+					return splits[1]
 			*/
 		} else {
 			fmt.Println(err)
@@ -105,15 +106,20 @@ func (s *FbLoginService) HandleFbRedirect(values url.Values) string {
 }
 
 func (s *FbLoginService) exchangeTokenWithFb(code string) map[string]interface{} {
-	accessTokenURL := fmt.Sprintf("https://graph.facebook.com/v8.0/oauth/access_token?client_id=%s&redirect_uri=%s&client_secret=%s&code=%s",
+	accessTokenURL := fmt.Sprintf(
+		"https://graph.facebook.com/v8.0/oauth/access_token?client_id=%s&redirect_uri=%s&client_secret=%s&code=%s",
 		os.Getenv("FB_OAUTH_CLIENT_ID"), os.Getenv("FB_OAUTH_REDIRECT_URI"), os.Getenv("FB_OAUTH_CLIENT_SECRET"), code)
-	resp, err := http.Get(accessTokenURL)
+	resp, err := http.Get(accessTokenURL) //nolint:gosec
 
 	if err != nil {
 		panic(err)
 	}
 	var response map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&response)
+	respDecodeErr := json.NewDecoder(resp.Body).Decode(&response)
+	if respDecodeErr != nil {
+		// todo: Refactor it properly instead of just logging
+		s.logger.Error("coud not decode response from facebook", zap.Error(respDecodeErr))
+	}
 	accessToken := response["access_token"]
 	fmt.Printf("facebook data = %v", response)
 

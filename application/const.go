@@ -1,5 +1,7 @@
 package application
 
+import "time"
+
 var (
 	StringConst = StringConstants{
 		LogLevelInfo:  "INFO",
@@ -7,9 +9,9 @@ var (
 		Email:         "Email",
 		Phone:         "PhoneNumber",
 		// this string is important, do not change it, if you change it you have to change the email service,
-		//utility.js if(payload.context === 'VERIFY_EMAIL')
+		// utility.js if(payload.context === 'VERIFY_EMAIL')
 		VerifyEmail: "VERIFY_EMAIL",
-		//nolint:lll    // https://stackoverflow.com/questions/19605150/regex-for-password-must-contain-at-least-eight-characters-at-least-one-number-a
+		// nolint:lll    // https://stackoverflow.com/questions/19605150/regex-for-password-must-contain-at-least-eight-characters-at-least-one-number-a
 		PasswordPattern: "^[a-zA-Z0-9]{8,}$",
 		EmailPattern: "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?" +
 			"(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
@@ -21,7 +23,7 @@ var (
 		LastNameMaxLen:  32, //nolint:gomnd
 		EmailNameMaxLen: 32, //nolint:gomnd
 		// Any database operation greater than 100 ms in regards with MongoDB is considered slow, by default.
-		DbMaxThreshold: 200, //nolint:gomnd, millisecond
+		DBAccessMaxThreshold: 200 * time.Millisecond, //nolint:gomnd, millisecond
 	}
 )
 
@@ -37,8 +39,8 @@ type StringConstants struct {
 }
 
 type IntConstants struct {
-	FirstNameMaxLen int
-	LastNameMaxLen  int
-	EmailNameMaxLen int
-	DbMaxThreshold  int
+	FirstNameMaxLen      int
+	LastNameMaxLen       int
+	EmailNameMaxLen      int
+	DBAccessMaxThreshold time.Duration
 }
